@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -24,6 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -39,6 +43,8 @@ fun LoginScreen(
     // variables
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var showPassword by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -61,11 +67,32 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        TextFieldEdit("Email", email) {
+        TextFieldEdit(
+            "Email", email, keyboardType = KeyboardType.Email,
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Email, contentDescription = "Email"
+                )
+            }
+        ) {
             email = it
         }
 
-        TextFieldEdit("Password", password) {
+        TextFieldEdit(
+            "Password", password,
+            keyboardType = KeyboardType.Password,
+            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            icon = {
+                IconButton(onClick = {
+                    showPassword = !showPassword
+                }) {
+                    Icon(
+                        imageVector = if (showPassword) Icons.Rounded.Close else Icons.Rounded.Face,
+                        contentDescription = "Show password"
+                    )
+                }
+            }
+        ) {
             password = it
         }
 
@@ -78,14 +105,14 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButtonEdit(text = "Forgot Password?",
+        TextButtonEdit(
+            text = "Forgot Password?",
             function = {
                 navHostController.navigate("forgotPasswordScreen")
             })
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButtonEdit(text = "Don't have an account? Sign up",
+        TextButtonEdit(
+            text = "Don't have an account? Sign up",
             function = {
                 navHostController.navigate("registerScreen")
             })
