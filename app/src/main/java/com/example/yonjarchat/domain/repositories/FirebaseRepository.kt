@@ -9,6 +9,8 @@ interface FirebaseRepository {
 
     fun forgotPassword(email: String): String
 
+    fun signOut(): String
+
 
 
 }

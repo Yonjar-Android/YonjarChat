@@ -35,17 +35,29 @@ class FirebaseRepositoryImp @Inject constructor(
     }
 
     override fun loginUser(email: String, password: String, onResult: (String) -> Unit) {
+
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     onResult.invoke("Inicio de sesión exitoso")
                 } else {
                     onResult.invoke("Error al iniciar sesión")
+
                 }
             }
     }
 
     override fun forgotPassword(email: String): String {
         return ""
+    }
+
+    override fun signOut(): String {
+        return try {
+            firebaseAuth.signOut()
+            "Sesión cerrada exitosamente"
+        } catch (e: Exception) {
+            // Puedes imprimir el error para debugging
+            "Error: ${e.message}"
+        }
     }
 }

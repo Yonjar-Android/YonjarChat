@@ -1,5 +1,6 @@
 package com.example.yonjarchat.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,12 +25,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.TextButtonEdit
@@ -37,7 +41,8 @@ import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
 fun LoginScreen(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    viewModel: LoginScreenViewModel = hiltViewModel()
 ) {
 
     // variables
@@ -45,6 +50,20 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     var showPassword by remember { mutableStateOf(false) }
+    val message by viewModel.message.collectAsStateWithLifecycle()
+
+    if (message.isNotEmpty()) {
+        if (message == "Inicio de sesión exitoso") {
+            navHostController.navigate("chatListScreen") {
+                popUpTo("loginScreen") {
+                    inclusive = true
+                }
+            }
+        }
+
+        Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
+        viewModel.resetMessage()
+    }
 
     Column(
         modifier = Modifier
@@ -99,7 +118,7 @@ fun LoginScreen(
         ButtonEdit(
             buttonText = "Sign in",
             function = {
-                navHostController.navigate("chatListScreen")
+                viewModel.loginUser(email, password)
             }
         )
 
