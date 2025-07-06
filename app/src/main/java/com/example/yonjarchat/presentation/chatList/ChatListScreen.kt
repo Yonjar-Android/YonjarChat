@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -52,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.R
+import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -61,6 +63,8 @@ fun ChatListScreen(
 ) {
 
     var username by remember { mutableStateOf("") }
+
+    val users by viewModel.users.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
 
     var showDialog by remember { mutableStateOf(false) }
@@ -152,9 +156,10 @@ fun ChatListScreen(
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            items(10) {
-                ChatItem(navigateToChat = {
-                    navHostController.navigate("chatScreen")
+            items(users) {
+                ChatItem( user = it,
+                    navigateToChat = {
+                    navHostController.navigate("chatScreen/${it.uid}")
                 })
             }
         }
@@ -179,6 +184,7 @@ fun ChatListScreen(
 
 @Composable
 fun ChatItem(
+    user: User,
     navigateToChat: () -> Unit = {}
 ) {
     Row(
@@ -199,7 +205,7 @@ fun ChatItem(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Username", fontWeight = FontWeight.Bold, fontSize = 18.sp,
+                text = user.username, fontWeight = FontWeight.Bold, fontSize = 18.sp,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
             Text(

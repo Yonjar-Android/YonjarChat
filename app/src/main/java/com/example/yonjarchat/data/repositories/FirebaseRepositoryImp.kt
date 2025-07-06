@@ -1,5 +1,7 @@
 package com.example.yonjarchat.data.repositories
 
+import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -58,6 +60,21 @@ class FirebaseRepositoryImp @Inject constructor(
         } catch (e: Exception) {
             // Puedes imprimir el error para debugging
             "Error: ${e.message}"
+        }
+    }
+
+    override suspend fun getUsers(): List<User> {
+        return try {
+            val querySnapshot = firestore.collection("Users").get().await()
+            querySnapshot.documents.mapNotNull { document ->
+                val user = document.toObject(UserDomain::class.java)
+                if (user != null && document.id != firebaseAuth.currentUser?.uid) User(document.id, user.username, user.email)
+                else null
+            }
+        }
+        catch (e: Exception) {
+            println("Error al obtener usuarios: ${e.message}")
+            emptyList()
         }
     }
 }

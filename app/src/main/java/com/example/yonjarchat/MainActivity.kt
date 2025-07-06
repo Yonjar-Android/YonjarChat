@@ -14,9 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.yonjarchat.presentation.chat.ChatScreen
 import com.example.yonjarchat.presentation.chatList.ChatListScreen
 import com.example.yonjarchat.presentation.forgotPassword.ForgotPasswordScreen
@@ -88,9 +90,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("chatScreen") {
+                        composable("chatScreen/{userId}", arguments = listOf(
+                            navArgument("userId") {type = NavType.StringType}
+                        )) { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId")
                             ChatScreen(
-                                navHostController = controller
+                                navHostController = controller,
+                                chatUserId = userId ?: ""
                             )
                         }
                     }

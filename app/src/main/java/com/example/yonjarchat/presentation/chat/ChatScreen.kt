@@ -40,7 +40,8 @@ import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
 fun ChatScreen(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    chatUserId: String
 ) {
 
     val myUserId = "yonjar"
