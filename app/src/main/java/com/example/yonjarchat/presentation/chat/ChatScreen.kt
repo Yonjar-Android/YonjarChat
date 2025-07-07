@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
@@ -41,49 +44,19 @@ import com.example.yonjarchat.sharedComponents.TextFieldEdit
 @Composable
 fun ChatScreen(
     navHostController: NavHostController,
-    chatUserId: String
+    chatUserId: String,
+    viewModel: ChatScreenViewModel = hiltViewModel()
 ) {
 
-    val myUserId = "yonjar"
-    val list = listOf<MessageDomain>(
-        MessageDomain(
-            messageId = "1",
-            chatId = "1",
-            senderId = "yonjar",
-            receiverId = "2",
-            content = "Hello",
-            timestamp = System.currentTimeMillis(),
-            isSeen = true
-        ),
-        MessageDomain(
-            messageId = "2",
-            chatId = "1",
-            senderId = "2",
-            receiverId = "yonjar",
-            content = "Hi",
-            timestamp = System.currentTimeMillis(),
-            isSeen = true
-        ),
-        MessageDomain(
-            messageId = "3",
-            chatId = "1",
-            senderId = "yonjar",
-            receiverId = "2",
-            content = "How are you?",
-            timestamp = System.currentTimeMillis(),
-            isSeen = true
-        ),
-        MessageDomain(
-            messageId = "4",
-            chatId = "1",
-            senderId = "2",
-            receiverId = "yonjar",
-            content = "I'm fine, thanks!",
-            timestamp = System.currentTimeMillis(),
-            isSeen = true
-        ),
-    )
+    LaunchedEffect(chatUserId) {
+        viewModel.getUser(chatUserId)
+    }
+
+
     var message by remember { mutableStateOf("") }
+    val user by viewModel.user.collectAsStateWithLifecycle()
+    val myUserId by viewModel.myUserId.collectAsStateWithLifecycle()
+
 
     Column(
         modifier = Modifier
@@ -109,7 +82,7 @@ fun ChatScreen(
             }
 
             Text(
-                text = "Username",
+                text = user?.username ?: "",
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -134,8 +107,16 @@ fun ChatScreen(
                 .weight(1f)
                 .padding(vertical = 16.dp)
         ) {
-            items(list) { message ->
-                ChatMessageItem(message = message, myUserId = myUserId)
+            items(1) { message ->
+                ChatMessageItem(message = MessageDomain(
+                    messageId = "",
+                    chatId = "",
+                    senderId = "",
+                    receiverId = "",
+                    content = "Hola",
+                    timestamp = System.currentTimeMillis(),
+                    isSeen = false
+                ), myUserId = myUserId ?: "")
             }
         }
 
@@ -148,7 +129,11 @@ fun ChatScreen(
             icon = {
                 IconButton(
                     onClick = {
+                        println("Función llamada")
                         // Clean message
+                        viewModel.sendMessage(
+                         message
+                        )
                         message = ""
                     }) {
                     Icon(
