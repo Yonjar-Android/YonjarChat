@@ -89,4 +89,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.testing)
     implementation(libs.androidx.room.paging)
+
+    // Data Store / Shared Preferences
+    implementation(libs.androidx.datastore.preferences)
 }
