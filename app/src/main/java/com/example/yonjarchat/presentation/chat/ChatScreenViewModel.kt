@@ -2,9 +2,11 @@ package com.example.yonjarchat.presentation.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +24,14 @@ class ChatScreenViewModel @Inject constructor(
     private var _myUserId = MutableStateFlow<String?>(null)
     val myUserId: StateFlow<String?> = _myUserId
 
+    private var _chatMessages = MutableStateFlow<List<MessageModel>>(emptyList())
+    val chatMessages: StateFlow<List<MessageModel>> = _chatMessages
+
+
     private var _message = MutableStateFlow<String>("")
     val message: StateFlow<String> = _message
+
+    var listener: ListenerRegistration? = null
 
     fun getUser(id: String) {
         viewModelScope.launch {
@@ -32,17 +40,31 @@ class ChatScreenViewModel @Inject constructor(
         }
     }
 
+    fun observeMessages(
+        userId :String
+    ) {
+        viewModelScope.launch {
+            listener = firebaseRepository.getMessages(
+                user1 = userId,
+                user2 = firebaseAuth.currentUser?.uid ?: "",
+                onResult = { messages ->
+                    _chatMessages.value = messages
+                    println("Mensajes recibidos: $messages")
+                }
+            )
+        }
+    }
+
     fun sendMessage(
         messageContent: String
     ){
         viewModelScope.launch {
             firebaseRepository.sendMessage(
-                senderId = user.value?.uid ?: "",
-                receiverId = firebaseAuth.currentUser?.uid ?: "",
+                senderId = firebaseAuth.currentUser?.uid ?: "",
+                receiverId = user.value?.uid ?: "",
                 content = messageContent
             )
-            println("mYUSER: ${firebaseAuth.currentUser?.uid}")
-            println("USER: ${user.value?.uid}")
+
             println("Mensaje enviado")
         }
     }

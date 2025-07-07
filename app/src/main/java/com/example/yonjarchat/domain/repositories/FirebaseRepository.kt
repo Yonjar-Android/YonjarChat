@@ -1,7 +1,8 @@
 package com.example.yonjarchat.domain.repositories
 
-import com.example.yonjarchat.domain.MessageDomain
+import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
+import com.google.firebase.firestore.ListenerRegistration
 
 interface FirebaseRepository {
     suspend fun registerUser(
@@ -20,7 +21,8 @@ interface FirebaseRepository {
 
     suspend fun sendMessage(senderId: String, receiverId: String, content: String)
 
-    suspend fun getMessages(senderId: String, receiverId: String): List<MessageDomain>
+    suspend fun getMessages(user1: String, user2: String,
+                             onResult: (List<MessageModel>) -> Unit): ListenerRegistration
 
 
 

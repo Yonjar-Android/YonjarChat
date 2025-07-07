@@ -1,7 +1,9 @@
 package com.example.yonjarchat.presentation.chatList
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,9 +34,17 @@ class ChatListViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
-        val response = firebaseRepository.signOut()
-        _message.value = response
+    fun signOut(context: Context) {
+        viewModelScope.launch {
+            val response = firebaseRepository.signOut()
+            _message.value = response
+
+            if (response == "Sesión cerrada exitosamente"){
+                val userPreferences = UserPreferences(context)
+                userPreferences.clearUserId()
+            }
+        }
+
     }
 
     fun resetMessage(){

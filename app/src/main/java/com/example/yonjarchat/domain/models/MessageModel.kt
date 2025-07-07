@@ -1,6 +1,6 @@
 package com.example.yonjarchat.domain.models
 
-data class Message(
+data class MessageModel(
     val senderId: String = "",
     val receiverId: String = "",
     val content: String = "",

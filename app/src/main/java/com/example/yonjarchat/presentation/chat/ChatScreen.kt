@@ -26,20 +26,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
+import kotlin.coroutines.coroutineContext
 
 @Composable
 fun ChatScreen(
@@ -50,12 +54,21 @@ fun ChatScreen(
 
     LaunchedEffect(chatUserId) {
         viewModel.getUser(chatUserId)
+        viewModel.observeMessages(chatUserId)
     }
 
+    val context = LocalContext.current
+    val userPreferences = UserPreferences(context)
+    val myUserId by produceState<String?>(initialValue = null) {
+        userPreferences.userId.collect {
+            value = it
+        }
+    }
 
     var message by remember { mutableStateOf("") }
     val user by viewModel.user.collectAsStateWithLifecycle()
-    val myUserId by viewModel.myUserId.collectAsStateWithLifecycle()
+
+    val chatMessages by viewModel.chatMessages.collectAsStateWithLifecycle()
 
 
     Column(
@@ -107,14 +120,14 @@ fun ChatScreen(
                 .weight(1f)
                 .padding(vertical = 16.dp)
         ) {
-            items(1) { message ->
+            items(chatMessages) { message ->
                 ChatMessageItem(message = MessageDomain(
                     messageId = "",
                     chatId = "",
-                    senderId = "",
-                    receiverId = "",
-                    content = "Hola",
-                    timestamp = System.currentTimeMillis(),
+                    senderId = message.senderId,
+                    receiverId = message.receiverId,
+                    content = message.content,
+                    timestamp = message.timestamp,
                     isSeen = false
                 ), myUserId = myUserId ?: "")
             }
@@ -149,8 +162,7 @@ fun ChatScreen(
 @Composable
 fun ChatMessageItem(
     message: MessageDomain,
-    myUserId: String = "yonjar",
-
+    myUserId: String = "",
     ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -171,6 +183,10 @@ fun ChatMessageItem(
             )
         }
     }
+
+    println("SENDER ID: ${message.senderId}")
+    println("MY USER ID: $myUserId")
+
 
     Spacer(modifier = Modifier.height(16.dp))
 }

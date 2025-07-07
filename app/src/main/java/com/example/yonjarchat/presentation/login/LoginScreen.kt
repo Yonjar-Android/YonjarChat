@@ -49,6 +49,8 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+
     var showPassword by remember { mutableStateOf(false) }
     val message by viewModel.message.collectAsStateWithLifecycle()
 
@@ -118,7 +120,7 @@ fun LoginScreen(
         ButtonEdit(
             buttonText = "Sign in",
             function = {
-                viewModel.loginUser(email, password)
+                viewModel.loginUser(email, password, context)
             }
         )
 

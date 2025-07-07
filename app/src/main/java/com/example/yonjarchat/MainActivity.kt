@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,6 +28,7 @@ import com.example.yonjarchat.presentation.register.RegisterScreen
 import com.example.yonjarchat.ui.theme.YonjarChatTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -43,14 +45,16 @@ class MainActivity : ComponentActivity() {
             YonjarChatTheme {
 
                 val controller = rememberNavController()
+                val context = LocalContext.current
 
                 // Estado para controlar el destino inicial
                 var startDestination by remember { mutableStateOf<String>("") }
 
                 LaunchedEffect(Unit) {
                     // Esperar que Firebase actualice el estado del usuario
-                    firebaseAuth.currentUser?.reload()?.await()
-                    startDestination = if (firebaseAuth.currentUser != null) {
+                    val userPreferences = UserPreferences(context)
+
+                    startDestination = if (userPreferences.userId.first() != null) {
                         "chatListScreen"
                     } else {
                         "loginScreen"

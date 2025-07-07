@@ -1,13 +1,13 @@
 package com.example.yonjarchat.data.repositories
 
-import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.domain.models.ChatDomain
-import com.example.yonjarchat.domain.models.Message
+import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -26,7 +26,6 @@ class FirebaseRepositoryImp @Inject constructor(
             val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val uid =
                 authResult.user?.uid ?: throw Exception("No se pudo obtener el UID del usuario")
-
             val user = mapOf(
                 "username" to username,
                 "email" to email
@@ -135,7 +134,7 @@ class FirebaseRepositoryImp @Inject constructor(
 
             // Agregamos el mensaje a la subcolección
 
-            val message = Message(
+            val message = MessageModel(
                 senderId = senderId,
                 receiverId = receiverId,
                 content = content,
@@ -144,17 +143,37 @@ class FirebaseRepositoryImp @Inject constructor(
 
             chatCollection.document(chatId).collection("messages").add(message).await()
 
-
         } catch (e: Exception) {
             println("Error al enviar mensaje: ${e.message}")
         }
     }
 
     override suspend fun getMessages(
-        senderId: String,
-        receiverId: String
-    ): List<MessageDomain> {
-        return emptyList()
+        user1: String,
+        user2: String,
+        onResult: (List<MessageModel>) -> Unit
+    ): ListenerRegistration {
+
+        val chatId = generateChatId(user1, user2)
+        val messagesRef = firestore.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .orderBy("timestamp")
+
+        return messagesRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                println("Error al obtener mensajes: ${error.message}")
+                return@addSnapshotListener
+            }
+            if (snapshot != null && !snapshot.isEmpty) {
+                val messages = snapshot.documents.mapNotNull{ doc ->
+                    doc.toObject(MessageModel::class.java)
+                }
+                onResult(messages)
+            } else{
+                onResult(emptyList())
+            }
+        }
     }
 
     fun generateChatId(user1: String, user2: String): String {

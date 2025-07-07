@@ -67,6 +67,8 @@ fun ChatListScreen(
     val users by viewModel.users.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+
     var showDialog by remember { mutableStateOf(false) }
 
     if (message.isNotEmpty()) {
@@ -171,7 +173,7 @@ fun ChatListScreen(
                 showDialog = false
             },
             onConfirm = {
-                viewModel.signOut()
+                viewModel.signOut(context)
                 showDialog = false
             }
         )
