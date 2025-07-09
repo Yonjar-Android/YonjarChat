@@ -44,6 +44,11 @@ class LoginScreenViewModel @Inject constructor(
             _message.value = "Please fill all the fields"
             return false
         }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            _message.value = "Email is not valid"
+            return false
+        }
         return true
     }
 

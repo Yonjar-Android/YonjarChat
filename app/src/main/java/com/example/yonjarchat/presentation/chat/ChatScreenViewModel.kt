@@ -21,9 +21,6 @@ class ChatScreenViewModel @Inject constructor(
     private var _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    private var _myUserId = MutableStateFlow<String?>(null)
-    val myUserId: StateFlow<String?> = _myUserId
-
     private var _chatMessages = MutableStateFlow<List<MessageModel>>(emptyList())
     val chatMessages: StateFlow<List<MessageModel>> = _chatMessages
 
@@ -36,7 +33,6 @@ class ChatScreenViewModel @Inject constructor(
     fun getUser(id: String) {
         viewModelScope.launch {
             _user.value = firebaseRepository.getUserId(id)
-            _myUserId.value = firebaseAuth.currentUser?.uid
         }
     }
 

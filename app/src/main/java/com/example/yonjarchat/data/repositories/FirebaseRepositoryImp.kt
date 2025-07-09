@@ -57,8 +57,15 @@ class FirebaseRepositoryImp @Inject constructor(
             }
     }
 
-    override fun forgotPassword(email: String): String {
-        return ""
+    override suspend fun forgotPassword(email: String): String {
+        return try {
+            firebaseAuth.sendPasswordResetEmail(email).await()
+            "Se le ha enviado un correo para restablecer su contraseña"
+
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+
     }
 
     override fun signOut(): String {

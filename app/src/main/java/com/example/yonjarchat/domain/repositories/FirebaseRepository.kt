@@ -11,7 +11,7 @@ interface FirebaseRepository {
 
     fun loginUser(email: String, password: String, onResult: (String) -> Unit)
 
-    fun forgotPassword(email: String): String
+    suspend fun forgotPassword(email: String): String
 
     fun signOut(): String
 

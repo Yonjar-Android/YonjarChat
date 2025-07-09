@@ -1,5 +1,6 @@
 package com.example.yonjarchat.presentation.forgotPassword
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,19 +24,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
 fun ForgotPasswordScreen(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    viewModel: ForgotPasswordViewModel = hiltViewModel()
 ) {
     // variables
     var email by remember { mutableStateOf("") }
+
+    val message by viewModel.message.collectAsStateWithLifecycle()
+
+    if (message.isNotEmpty()) {
+        Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
+        viewModel.clearMessage()
+    }
 
     Column(
         modifier = Modifier
@@ -77,7 +89,10 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         ButtonEdit(
-            buttonText = "Send reset link"
+            buttonText = "Send reset link",
+            function = {
+                viewModel.forgotPassword(email)
+            }
         )
 
     }
