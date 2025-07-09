@@ -64,7 +64,7 @@ fun LoginScreen(
         }
 
         Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
-        viewModel.resetMessage()
+        viewModel.clearMessage()
     }
 
     Column(
@@ -78,6 +78,9 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = "Sign in",
                 modifier = Modifier.align(Alignment.Center),

@@ -35,7 +35,12 @@ class FirebaseRepositoryImp @Inject constructor(
             "Usuario creado exitosamente"
         } catch (e: Exception) {
             firebaseAuth.currentUser?.delete()
-            "Error al crear el usuario: ${e.message}"
+            // Verificar si el error es por correo duplicado
+            if (e.message?.contains("email")  == true) {
+                "Error: Ya existe una cuenta con este correo"
+            } else {
+                "Error al crear el usuario: ${e.message}"
+            }
         }
     }
 

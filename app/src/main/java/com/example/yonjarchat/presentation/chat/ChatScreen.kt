@@ -1,6 +1,8 @@
 package com.example.yonjarchat.presentation.chat
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,16 +16,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -65,11 +70,17 @@ fun ChatScreen(
         }
     }
 
+    val errorMessage by viewModel.message.collectAsStateWithLifecycle()
+
     var message by remember { mutableStateOf("") }
     val user by viewModel.user.collectAsStateWithLifecycle()
 
     val chatMessages by viewModel.chatMessages.collectAsStateWithLifecycle()
 
+    if (errorMessage.isNotEmpty()) {
+        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        viewModel.clearMessage()
+    }
 
     Column(
         modifier = Modifier
@@ -81,6 +92,7 @@ fun ChatScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+
         ) {
             IconButton(
                 onClick = {
@@ -114,11 +126,23 @@ fun ChatScreen(
             }
         }
 
+        HorizontalDivider()
+
+        val listState = rememberLazyListState()
+
+        // Este efecto se dispara cuando los mensajes cambian
+        LaunchedEffect(chatMessages.size) {
+            if (chatMessages.isNotEmpty()) {
+                listState.animateScrollToItem(chatMessages.lastIndex)
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-                .padding(vertical = 16.dp)
+                .padding(vertical = 16.dp),
+            state = listState
         ) {
             items(chatMessages) { message ->
                 ChatMessageItem(message = MessageDomain(
@@ -145,7 +169,7 @@ fun ChatScreen(
                         println("Función llamada")
                         // Clean message
                         viewModel.sendMessage(
-                         message
+                         message.trim()
                         )
                         message = ""
                     }) {
@@ -183,10 +207,6 @@ fun ChatMessageItem(
             )
         }
     }
-
-    println("SENDER ID: ${message.senderId}")
-    println("MY USER ID: $myUserId")
-
 
     Spacer(modifier = Modifier.height(16.dp))
 }

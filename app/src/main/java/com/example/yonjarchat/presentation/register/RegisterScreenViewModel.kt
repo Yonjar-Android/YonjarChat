@@ -42,8 +42,6 @@ class RegisterScreenViewModel @Inject constructor(
             return false
         }
 
-
-
         if (password != repeatPassword){
             _message.value = "Passwords do not match"
             return false

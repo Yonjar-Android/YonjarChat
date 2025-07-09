@@ -81,7 +81,7 @@ fun ChatListScreen(
         }
 
         Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
-        viewModel.resetMessage()
+        viewModel.clearMessage()
     }
 
     Column(

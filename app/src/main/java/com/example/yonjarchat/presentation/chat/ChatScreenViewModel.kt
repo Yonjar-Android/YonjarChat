@@ -49,7 +49,6 @@ class ChatScreenViewModel @Inject constructor(
                 user2 = firebaseAuth.currentUser?.uid ?: "",
                 onResult = { messages ->
                     _chatMessages.value = messages
-                    println("Mensajes recibidos: $messages")
                 }
             )
         }
@@ -58,6 +57,13 @@ class ChatScreenViewModel @Inject constructor(
     fun sendMessage(
         messageContent: String
     ){
+
+        if (messageContent.isEmpty())
+        {
+            _message.value = "Error Message cannot be empty"
+            return
+        }
+
         viewModelScope.launch {
             firebaseRepository.sendMessage(
                 senderId = firebaseAuth.currentUser?.uid ?: "",
@@ -65,7 +71,10 @@ class ChatScreenViewModel @Inject constructor(
                 content = messageContent
             )
 
-            println("Mensaje enviado")
         }
+    }
+
+    fun clearMessage(){
+        _message.value = ""
     }
 }

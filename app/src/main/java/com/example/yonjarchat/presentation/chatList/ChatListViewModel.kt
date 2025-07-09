@@ -47,7 +47,7 @@ class ChatListViewModel @Inject constructor(
 
     }
 
-    fun resetMessage(){
+    fun clearMessage(){
         _message.value = ""
     }
 

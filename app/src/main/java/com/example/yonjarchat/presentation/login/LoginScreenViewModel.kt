@@ -23,20 +23,31 @@ class LoginScreenViewModel @Inject constructor(
 
     fun loginUser(email: String, password: String, context: Context) {
 
-        firebaseRepository.loginUser(email, password){
-            _message.value = it
-            if (it == "Inicio de sesión exitoso"){
-                if (firebaseAuth.currentUser != null){
-                    viewModelScope.launch {
-                        val userPreferences = UserPreferences(context)
-                        userPreferences.saveUserId(firebaseAuth.currentUser!!.uid)
+        if (validations(email, password)){
+            firebaseRepository.loginUser(email, password){
+                _message.value = it
+                if (it == "Inicio de sesión exitoso"){
+                    if (firebaseAuth.currentUser != null){
+                        viewModelScope.launch {
+                            val userPreferences = UserPreferences(context)
+                            userPreferences.saveUserId(firebaseAuth.currentUser!!.uid)
+                        }
                     }
                 }
             }
         }
     }
 
-    fun resetMessage(){
+
+    fun validations(email: String, password: String): Boolean{
+        if (email.isEmpty() || password.isEmpty()){
+            _message.value = "Please fill all the fields"
+            return false
+        }
+        return true
+    }
+
+    fun clearMessage(){
         _message.value = ""
     }
 
