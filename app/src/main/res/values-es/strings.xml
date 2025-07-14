@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YonjarChat</string>
+    <string name="signInStr">Iniciar Sesión</string>
+    <string name="passwordStr">Contraseña</string>
+    <string name="emailStr">Correo</string>
+    <string name="forgotPwdStr">¿Olvidaste tu contraseña?</string>
+    <string name="dontHaveAccountStr">¿No tienes una cuenta? Regístrate</string>
+    <string name="createAccountStr">Crea una cuenta</string>
+    <string name="usernameStr">Nombre de usuario</string>
+    <string name="repeatPwd">Repetir contraseña</string>
+    <string name="alreadyHaveAnAccountStr">¿Ya tienes una cuenta? Inicia sesión</string>
+    <string name="resetPwdStr">Restablecer contraseña</string>
+    <string name="sendLinkPwdStr">Enviar correo</string>
+    <string name="youLoggedInStr">Inicio de sesión exitoso</string>
+    <string name="searchStr">Buscar</string>
+    <string name="messageStr">Mensaje</string>
+    <string name="areYouSureSignOutStr">¿Quieres cerrar sesión?</string>
+    <string name="signOutStr">Cerrar Sesión</string>
+    <string name="cancelStr">Cancelar</string>
+</resources>

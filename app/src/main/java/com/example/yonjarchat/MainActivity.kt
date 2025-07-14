@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,7 +54,6 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     // Esperar que Firebase actualice el estado del usuario
                     val userPreferences = UserPreferences(context)
-
                     startDestination = if (userPreferences.userId.first() != null) {
                         "chatListScreen"
                     } else {
@@ -106,6 +106,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                /*val builder = NotificationCompat.Builder(context, "channel_id")
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle("Título de la notificación")
+                    .setContentText("Contenido de la notificación")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+*/
             }
         }
     }

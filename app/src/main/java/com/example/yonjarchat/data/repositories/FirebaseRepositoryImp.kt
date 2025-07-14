@@ -1,10 +1,12 @@
 package com.example.yonjarchat.data.repositories
 
+import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.ChatDomain
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 class FirebaseRepositoryImp @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val resourceProvider: ResourceProvider
 ) : FirebaseRepository {
 
     override suspend fun registerUser(
@@ -49,7 +52,9 @@ class FirebaseRepositoryImp @Inject constructor(
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult.invoke("Inicio de sesión exitoso")
+                    onResult.invoke(resourceProvider.getString(
+                R.string.youLoggedInStr
+                    ))
                 } else {
                     onResult.invoke("Error al iniciar sesión")
 

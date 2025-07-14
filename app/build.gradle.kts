@@ -92,4 +92,9 @@ dependencies {
 
     // Data Store / Shared Preferences
     implementation(libs.androidx.datastore.preferences)
+
+    //Notificaciones
+
+    implementation(libs.androidx.core.ktx)
+
 }

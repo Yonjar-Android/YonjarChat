@@ -25,12 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.yonjarchat.R
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
@@ -73,7 +75,7 @@ fun ForgotPasswordScreen(
             }
 
             Text(
-                text = "Reset Password",
+                text = stringResource(id = R.string.forgotPwdStr),
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -82,14 +84,14 @@ fun ForgotPasswordScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        TextFieldEdit("Email", email, onValueChange = {
+        TextFieldEdit(stringResource(id = R.string.emailStr), email, onValueChange = {
             email = it
         })
 
         Spacer(modifier = Modifier.weight(1f))
 
         ButtonEdit(
-            buttonText = "Send reset link",
+            buttonText = stringResource(id = R.string.sendLinkPwdStr),
             function = {
                 viewModel.forgotPassword(email)
             }

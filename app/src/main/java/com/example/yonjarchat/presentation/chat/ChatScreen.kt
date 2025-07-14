@@ -39,12 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
@@ -158,7 +160,7 @@ fun ChatScreen(
         }
 
         TextFieldEdit(
-            textTitle = "Message",
+            textTitle = stringResource(R.string.messageStr),
             value = message,
             maxLines = 5,
             singleLine = false,
@@ -166,7 +168,6 @@ fun ChatScreen(
             icon = {
                 IconButton(
                     onClick = {
-                        println("Función llamada")
                         // Clean message
                         viewModel.sendMessage(
                          message.trim()
@@ -188,6 +189,7 @@ fun ChatMessageItem(
     message: MessageDomain,
     myUserId: String = "",
     ) {
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (message.senderId == myUserId) Alignment.End else Alignment.Start
@@ -207,6 +209,6 @@ fun ChatMessageItem(
             )
         }
     }
-
+    println("User: $myUserId Message: $message")
     Spacer(modifier = Modifier.height(16.dp))
 }

@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -130,7 +131,7 @@ fun ChatListScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextFieldEdit(
-            textTitle = "Search",
+            textTitle = stringResource(R.string.searchStr),
             value = username,
             onValueChange = {
                 username = it
@@ -236,7 +237,7 @@ fun DialogSignOut(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Text(text = "Are you sure you want to sign out?", textAlign = TextAlign.Center)
+            Text(text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -247,7 +248,7 @@ fun DialogSignOut(
                         onDismissRequest.invoke()
                     }
                 ) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.cancelStr))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -255,7 +256,7 @@ fun DialogSignOut(
                         onConfirm.invoke()
                     }
                 ) {
-                    Text(text = "Sign out")
+                    Text(text = stringResource(R.string.signOutStr))
                 }
             }
         }

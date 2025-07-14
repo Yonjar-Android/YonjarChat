@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.yonjarchat.R
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.TextButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
@@ -55,7 +57,7 @@ fun LoginScreen(
     val message by viewModel.message.collectAsStateWithLifecycle()
 
     if (message.isNotEmpty()) {
-        if (message == "Inicio de sesión exitoso") {
+        if (message == stringResource(id = R.string.youLoggedInStr)) {
             navHostController.navigate("chatListScreen") {
                 popUpTo("loginScreen") {
                     inclusive = true
@@ -82,7 +84,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Sign in",
+                text = stringResource(id = R.string.signInStr),
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -92,7 +94,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         TextFieldEdit(
-            "Email", email, keyboardType = KeyboardType.Email,
+            stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
             icon = {
                 Icon(
                     imageVector = Icons.Rounded.Email, contentDescription = "Email"
@@ -103,7 +105,7 @@ fun LoginScreen(
         }
 
         TextFieldEdit(
-            "Password", password,
+            stringResource(id = R.string.passwordStr), password,
             keyboardType = KeyboardType.Password,
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             icon = {
@@ -121,7 +123,7 @@ fun LoginScreen(
         }
 
         ButtonEdit(
-            buttonText = "Sign in",
+            buttonText = stringResource(id = R.string.signInStr),
             function = {
                 viewModel.loginUser(email, password, context)
             }
@@ -130,13 +132,13 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButtonEdit(
-            text = "Forgot Password?",
+            text = stringResource(id = R.string.forgotPwdStr),
             function = {
                 navHostController.navigate("forgotPasswordScreen")
             })
 
         TextButtonEdit(
-            text = "Don't have an account? Sign up",
+            text = stringResource(id = R.string.dontHaveAccountStr),
             function = {
                 navHostController.navigate("registerScreen")
             })

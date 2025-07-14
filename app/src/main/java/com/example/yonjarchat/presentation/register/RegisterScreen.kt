@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.yonjarchat.R
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.TextButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
@@ -92,7 +94,7 @@ fun RegisterScreen(
             }
 
             Text(
-                text = "Create Account",
+                text = stringResource(id = R.string.createAccountStr),
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -101,12 +103,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        TextFieldEdit("Username", username) {
+        TextFieldEdit(stringResource(id = R.string.usernameStr), username) {
             username = it
         }
 
         TextFieldEdit(
-            "Email", email, keyboardType = KeyboardType.Email,
+            stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
             icon = {
                 Icon(
                     imageVector = Icons.Rounded.Email, contentDescription = "Email"
@@ -116,7 +118,7 @@ fun RegisterScreen(
         }
 
         TextFieldEdit(
-            "Password", password,
+            stringResource(id = R.string.passwordStr), password,
             keyboardType = KeyboardType.Password,
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             icon = {
@@ -134,7 +136,7 @@ fun RegisterScreen(
         }
 
         TextFieldEdit(
-            "Repeat Password",
+            stringResource(id = R.string.repeatPwd),
             repeatPassword,
             keyboardType = KeyboardType.Password,
             visualTransformation = if (showRepeatPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -153,7 +155,7 @@ fun RegisterScreen(
         }
 
         ButtonEdit(
-            buttonText = "Create Account",
+            buttonText = stringResource(id = R.string.createAccountStr),
             function = {
                 viewModel.registerUser(email, password, username, repeatPassword)
             }
@@ -162,7 +164,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButtonEdit(
-            text = "Already have an account? Sign in",
+            text = stringResource(id = R.string.alreadyHaveAnAccountStr),
             function = {
                 navHostController.navigate("loginScreen") {
                     popUpTo("loginScreen") {

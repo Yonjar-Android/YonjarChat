@@ -3,19 +3,23 @@ package com.example.yonjarchat.presentation.login
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class LoginScreenViewModel @Inject constructor(
     private val firebaseRepository: FirebaseRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val resourceProvider: ResourceProvider
 ): ViewModel() {
 
     private var _message = MutableStateFlow<String>("")
@@ -26,11 +30,12 @@ class LoginScreenViewModel @Inject constructor(
         if (validations(email, password)){
             firebaseRepository.loginUser(email, password){
                 _message.value = it
-                if (it == "Inicio de sesión exitoso"){
+                if (it == resourceProvider.getString(R.string.youLoggedInStr)){
                     if (firebaseAuth.currentUser != null){
                         viewModelScope.launch {
                             val userPreferences = UserPreferences(context)
                             userPreferences.saveUserId(firebaseAuth.currentUser!!.uid)
+                            println("User id viewModel ${userPreferences.userId.first()}")
                         }
                     }
                 }
