@@ -5,6 +5,7 @@ import com.example.yonjarchat.domain.models.ChatDomain
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserDomain
+import com.example.yonjarchat.domain.repositories.FcmRepository
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -17,8 +18,7 @@ import javax.inject.Inject
 class FirebaseRepositoryImp @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val resourceProvider: ResourceProvider
-) : FirebaseRepository {
+    private val resourceProvider: ResourceProvider) : FirebaseRepository {
 
     override suspend fun registerUser(
         email: String,
@@ -39,7 +39,7 @@ class FirebaseRepositoryImp @Inject constructor(
         } catch (e: Exception) {
             firebaseAuth.currentUser?.delete()
             // Verificar si el error es por correo duplicado
-            if (e.message?.contains("email")  == true) {
+            if (e.message?.contains("email") == true) {
                 "Error: Ya existe una cuenta con este correo"
             } else {
                 "Error al crear el usuario: ${e.message}"
@@ -52,9 +52,11 @@ class FirebaseRepositoryImp @Inject constructor(
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult.invoke(resourceProvider.getString(
-                R.string.youLoggedInStr
-                    ))
+                    onResult.invoke(
+                        resourceProvider.getString(
+                            R.string.youLoggedInStr
+                        )
+                    )
                 } else {
                     onResult.invoke("Error al iniciar sesión")
 
@@ -183,11 +185,11 @@ class FirebaseRepositoryImp @Inject constructor(
                 return@addSnapshotListener
             }
             if (snapshot != null && !snapshot.isEmpty) {
-                val messages = snapshot.documents.mapNotNull{ doc ->
+                val messages = snapshot.documents.mapNotNull { doc ->
                     doc.toObject(MessageModel::class.java)
                 }
                 onResult(messages)
-            } else{
+            } else {
                 onResult(emptyList())
             }
         }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.repositories.FcmRepository
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
@@ -23,7 +24,6 @@ class ChatScreenViewModel @Inject constructor(
 
     private var _chatMessages = MutableStateFlow<List<MessageModel>>(emptyList())
     val chatMessages: StateFlow<List<MessageModel>> = _chatMessages
-
 
     private var _message = MutableStateFlow<String>("")
     val message: StateFlow<String> = _message

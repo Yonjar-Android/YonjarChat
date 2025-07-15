@@ -1,9 +1,15 @@
 package com.example.yonjarchat
 
+import android.Manifest
+import android.Manifest.permission.POST_NOTIFICATIONS
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,7 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.NotificationCompat
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,7 +36,6 @@ import com.example.yonjarchat.ui.theme.YonjarChatTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -94,9 +99,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("chatScreen/{userId}", arguments = listOf(
-                            navArgument("userId") {type = NavType.StringType}
-                        )) { backStackEntry ->
+                        composable(
+                            "chatScreen/{userId}", arguments = listOf(
+                                navArgument("userId") { type = NavType.StringType }
+                            )) { backStackEntry ->
                             val userId = backStackEntry.arguments?.getString("userId")
                             ChatScreen(
                                 navHostController = controller,
@@ -106,12 +112,35 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                /*val builder = NotificationCompat.Builder(context, "channel_id")
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("Título de la notificación")
-                    .setContentText("Contenido de la notificación")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-*/
+                var permissionStatus by remember { mutableStateOf("Permission not Requested") }
+
+                // Android 13+ (API 33+) requiere permiso explícito
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val permissionLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission()
+                    ) { isGranted ->
+                        permissionStatus = if (isGranted) {
+                            "Permission Granted"
+                        } else {
+                            "Permission Denied"
+                        }
+                    }
+
+                    LaunchedEffect(Unit) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            permissionStatus = "Already Granted"
+                        }
+                    }
+                } else {
+                    // Para versiones anteriores a Android 13, el permiso es otorgado automáticamente
+                    permissionStatus = "Automatically Granted (Pre-Android 13)"
+                }
             }
         }
     }

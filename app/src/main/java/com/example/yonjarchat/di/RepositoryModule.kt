@@ -1,7 +1,9 @@
 package com.example.yonjarchat.di
 
 import android.content.Context
+import com.example.yonjarchat.data.repositories.FcmRepositoryImp
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
+import com.example.yonjarchat.domain.repositories.FcmRepository
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -24,7 +26,8 @@ object RepositoryModule {
         firestore: FirebaseFirestore,
         resourceProvider: ResourceProvider
     ): FirebaseRepository {
-        return FirebaseRepositoryImp(firebaseAuth, firestore, resourceProvider)
+        return FirebaseRepositoryImp(
+            firebaseAuth, firestore, resourceProvider)
     }
 
     @Provides
@@ -34,4 +37,12 @@ object RepositoryModule {
     ): ResourceProvider {
         return ResourceProvider(context)
     }
+
+    @Singleton
+    @Provides
+    fun provideFcmRepository(
+        firestore: FirebaseFirestore
+    ): FcmRepository = FcmRepositoryImp(
+        firestore
+    )
 }
