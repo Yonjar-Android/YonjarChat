@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
 
     // Dagger Hilt
     implementation(libs.hilt.android)
