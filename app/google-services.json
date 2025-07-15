@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "676413467074",
+    "project_id": "yonjarchat",
+    "storage_bucket": "yonjarchat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676413467074:android:90a31dc50f6217e9ba0e5b",
+        "android_client_info": {
+          "package_name": "com.example.yonjarchat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_w90G2pItNMJpP-ti6LnpQF9qfr-jCO8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

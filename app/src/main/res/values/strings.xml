@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">YonjarChat</string>
+    <string name="signInStr">Sign in</string>
+    <string name="passwordStr">Password</string>
+    <string name="emailStr">Email</string>
+    <string name="forgotPwdStr">Forgot Password?</string>
+    <string name="dontHaveAccountStr">Don\'t have an account? Sign up</string>
+    <string name="createAccountStr">Create an account</string>
+    <string name="usernameStr">Username</string>
+    <string name="repeatPwd">Repeat Password</string>
+    <string name="alreadyHaveAnAccountStr">Already have an account? Sign in</string>
+    <string name="resetPwdStr">Reset Password</string>
+    <string name="sendLinkPwdStr">Send link to reset password</string>
+    <string name="youLoggedInStr">Login successful</string>
+    <string name="searchStr">Search</string>
+    <string name="messageStr">Message</string>
+    <string name="areYouSureSignOutStr">Are you sure you want to sign out?</string>
+    <string name="signOutStr">Sign out</string>
+    <string name="cancelStr">Cancel</string>
+</resources>
