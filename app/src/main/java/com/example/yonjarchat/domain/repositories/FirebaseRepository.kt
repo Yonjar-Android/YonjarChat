@@ -19,6 +19,8 @@ interface FirebaseRepository {
 
     suspend fun getUserId(id: String): User?
 
+    suspend fun updateUsername(id: String, username: String, onResult: (String) -> Unit)
+
     suspend fun sendMessage(senderId: String, receiverId: String, content: String)
 
     suspend fun getMessages(user1: String, user2: String,

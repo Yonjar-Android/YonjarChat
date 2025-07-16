@@ -17,4 +17,10 @@
     <string name="areYouSureSignOutStr">Are you sure you want to sign out?</string>
     <string name="signOutStr">Sign out</string>
     <string name="cancelStr">Cancel</string>
+    <string name="settingsStr">Settings</string>
+    <string name="darkThemeStr">Dark Theme</string>
+    <string name="languageStr">Language</string>
+    <string name="editUserStr">Edit Username</string>
+    <string name="enterUsernameStr">Enter your new username:</string>
+    <string name="saveStr">Save</string>
 </resources>

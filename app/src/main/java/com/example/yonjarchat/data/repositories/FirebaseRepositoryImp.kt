@@ -118,6 +118,20 @@ class FirebaseRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun updateUsername(
+        id: String,
+        username: String,
+        onResult: (String) -> Unit
+    ) {
+        try {
+            val userRef = firestore.collection("Users").document(id)
+            userRef.update("username", username).await()
+            onResult("Nombre de usuario actualizado exitosamente")
+        } catch (e: Exception) {
+            onResult("Error al actualizar el nombre de usuario: ${e.message}")
+        }
+    }
+
     override suspend fun sendMessage(
         senderId: String,
         receiverId: String,
