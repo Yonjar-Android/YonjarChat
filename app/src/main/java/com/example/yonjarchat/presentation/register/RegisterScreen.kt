@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -89,7 +91,8 @@ fun RegisterScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -97,7 +100,8 @@ fun RegisterScreen(
                 text = stringResource(id = R.string.createAccountStr),
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -111,7 +115,8 @@ fun RegisterScreen(
             stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
             icon = {
                 Icon(
-                    imageVector = Icons.Rounded.Email, contentDescription = "Email"
+                    imageVector = Icons.Rounded.Email, contentDescription = "Email",
+                    tint = Color.Black
                 )
             }) {
             email = it
@@ -127,7 +132,8 @@ fun RegisterScreen(
                 }) {
                     Icon(
                         imageVector = if (showPassword) Icons.Rounded.Close else Icons.Rounded.Face,
-                        contentDescription = "Show password"
+                        contentDescription = "Show password",
+                        tint = Color.Black
                     )
                 }
             }
@@ -146,7 +152,8 @@ fun RegisterScreen(
                 }) {
                     Icon(
                         imageVector = if (showRepeatPassword) Icons.Rounded.Close else Icons.Rounded.Face,
-                        contentDescription = "Show repeat password"
+                        contentDescription = "Show repeat password",
+                        tint = Color.Black
                     )
                 }
             }

@@ -10,10 +10,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,6 +37,8 @@ import com.example.yonjarchat.presentation.chatList.ChatListScreen
 import com.example.yonjarchat.presentation.forgotPassword.ForgotPasswordScreen
 import com.example.yonjarchat.presentation.login.LoginScreen
 import com.example.yonjarchat.presentation.register.RegisterScreen
+import com.example.yonjarchat.presentation.settings.SettingsScreen
+import com.example.yonjarchat.presentation.settings.SettingsScreenViewModel
 import com.example.yonjarchat.ui.theme.YonjarChatTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,11 +51,16 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var firebaseAuth: FirebaseAuth
 
+    private val settingsViewModel: SettingsScreenViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            YonjarChatTheme {
+
+            val darkTheme by settingsViewModel.darkTheme.collectAsStateWithLifecycle()
+
+            YonjarChatTheme(darkTheme = darkTheme) {
 
                 val controller = rememberNavController()
                 val context = LocalContext.current
@@ -73,7 +85,8 @@ class MainActivity : ComponentActivity() {
                 } else {
                     NavHost(
                         navController = controller,
-                        startDestination = startDestination
+                        startDestination = startDestination,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
                     ) {
                         composable("registerScreen") {
                             RegisterScreen(
@@ -109,6 +122,13 @@ class MainActivity : ComponentActivity() {
                                 chatUserId = userId ?: ""
                             )
                         }
+
+                        composable("settingsScreen") {
+                            SettingsScreen(
+                                navHostController = controller,
+                                viewModel = settingsViewModel
+                            )
+                        }
                     }
                 }
 
@@ -126,17 +146,17 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    LaunchedEffect(Unit) {
-                        if (ActivityCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.POST_NOTIFICATIONS
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            permissionStatus = "Already Granted"
-                        }
+
+                    if (ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        permissionStatus = "Already Granted"
                     }
+
                 } else {
                     // Para versiones anteriores a Android 13, el permiso es otorgado automáticamente
                     permissionStatus = "Automatically Granted (Pre-Android 13)"

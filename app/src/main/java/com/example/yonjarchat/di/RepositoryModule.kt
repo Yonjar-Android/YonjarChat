@@ -1,6 +1,7 @@
 package com.example.yonjarchat.di
 
 import android.content.Context
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.data.repositories.FcmRepositoryImp
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
 import com.example.yonjarchat.domain.repositories.FcmRepository
@@ -45,4 +46,11 @@ object RepositoryModule {
     ): FcmRepository = FcmRepositoryImp(
         firestore
     )
+
+    @Singleton
+    @Provides
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences{
+        return UserPreferences(context)
+    }
+
 }

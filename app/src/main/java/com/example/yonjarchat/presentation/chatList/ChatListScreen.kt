@@ -29,9 +29,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -89,7 +91,8 @@ fun ChatListScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
-            .padding(horizontal = 8.dp), // Espaciado horizontal opcional
+            .padding(horizontal = 8.dp)
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -104,7 +107,8 @@ fun ChatListScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -112,18 +116,20 @@ fun ChatListScreen(
                 text = "Chats",
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             IconButton(
                 onClick = {
-
+                    navHostController.navigate("settingsScreen")
                 },
                 modifier = Modifier.align(Alignment.TopEnd)
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -145,7 +151,8 @@ fun ChatListScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        tint = Color.Black
                     )
                 }
 
@@ -209,7 +216,8 @@ fun ChatItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = user.username, fontWeight = FontWeight.Bold, fontSize = 18.sp,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = "Last Message", fontSize = 16.sp, color = Color(0XFF4A709C),
@@ -233,11 +241,12 @@ fun DialogSignOut(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Text(text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center)
+            Text(text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -246,7 +255,10 @@ fun DialogSignOut(
                 TextButton(
                     onClick = {
                         onDismissRequest.invoke()
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
                     Text(text = stringResource(R.string.cancelStr))
                 }
@@ -254,9 +266,13 @@ fun DialogSignOut(
                 Button(
                     onClick = {
                         onConfirm.invoke()
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
-                    Text(text = stringResource(R.string.signOutStr))
+                    Text(text = stringResource(R.string.signOutStr),
+                        color = Color.Black)
                 }
             }
         }

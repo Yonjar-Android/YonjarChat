@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -87,6 +88,7 @@ fun ChatScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
             .padding(horizontal = 8.dp), // Espaciado horizontal opcional
         horizontalAlignment = Alignment.CenterHorizontally
@@ -104,15 +106,22 @@ fun ChatScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
+            val username: String? = user?.username?.replaceFirst(
+                user?.username?.first().toString(),
+                user?.username?.first().toString().uppercase()
+            )
+
             Text(
-                text = user?.username ?: "",
+                text = username ?: "",
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             IconButton(
@@ -123,7 +132,8 @@ fun ChatScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Phone,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -176,7 +186,8 @@ fun ChatScreen(
                     }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        tint = Color.Black
                     )
                 }
             }
@@ -209,6 +220,6 @@ fun ChatMessageItem(
             )
         }
     }
-    println("User: $myUserId Message: $message")
+
     Spacer(modifier = Modifier.height(16.dp))
 }
