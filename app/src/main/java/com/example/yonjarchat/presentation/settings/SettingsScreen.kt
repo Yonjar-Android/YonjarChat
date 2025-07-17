@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
@@ -71,7 +72,7 @@ fun SettingsScreen(
 ) {
 
     val darkTheme by viewModel.darkTheme.collectAsStateWithLifecycle()
-    val username by viewModel.username.collectAsStateWithLifecycle()
+    val user by viewModel.username.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     var showPicture by remember { mutableStateOf(false) }
 
@@ -132,19 +133,21 @@ fun SettingsScreen(
 
         }
 
-        Image(
-            painter = selectedImageUri?.let {
-                rememberAsyncImagePainter(it)
-            } ?: painterResource(R.drawable.user),
+        println("Imagen: ${user?.imageUrl}")
+
+        AsyncImage(
+            model = user?.imageUrl,
             contentDescription = "Settings",
             modifier = Modifier
                 .padding(16.dp)
                 .size(150.dp)
                 .clip(CircleShape)
-                .clickable{
+                .clickable {
                     showPicture = true
                 },
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(R.drawable.user),
+            error = painterResource(R.drawable.user)
         )
 
         Spacer(
@@ -158,7 +161,11 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(username, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+            Text(
+                user?.username ?: "",
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             IconButton(
                 onClick = {
                     showEditUsernameDialog = true
@@ -219,7 +226,11 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.languageStr), fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+            Text(
+                stringResource(R.string.languageStr),
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             Text(currentLanguage, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
         }
 
@@ -227,7 +238,7 @@ fun SettingsScreen(
 
     if (showEditUsernameDialog) {
         EditUsernameDialog(
-            currentName = username,
+            currentName = user?.username ?: "",
             onDismiss = { showEditUsernameDialog = false },
             onSave = { newName ->
                 if (myUserId != null && newName.isNotEmpty()) {
@@ -242,11 +253,19 @@ fun SettingsScreen(
 
     if (showPicture) {
         PictureDialog(
+            imageUrl = user?.imageUrl,
             onDismiss = { showPicture = false },
-            setImage = {
-
-                imageUri -> selectedImageUri = imageUri
-
+            setImage = { imageUri ->
+                selectedImageUri = imageUri
+                if (myUserId != null && selectedImageUri != null) {
+                    viewModel.setPicture(
+                        myUserId ?: "",
+                        selectedImageUri!!,
+                        context,
+                        user?.imageUrl ?: ""
+                    )
+                    showPicture = false
+                }
             }
         )
     }
@@ -266,9 +285,11 @@ fun EditUsernameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(
-            stringResource(R.string.editUserStr)
-        ) },
+        title = {
+            Text(
+                stringResource(R.string.editUserStr)
+            )
+        },
         text = {
             Column {
                 Text(
@@ -302,9 +323,10 @@ fun EditUsernameDialog(
 
 @Composable
 fun PictureDialog(
+    imageUrl: String? = null,
     onDismiss: () -> Unit,
     setImage: (Uri?) -> Unit
-){
+) {
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -325,27 +347,26 @@ fun PictureDialog(
         onDismissRequest = onDismiss
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
-                .clickable{
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
                     onDismiss.invoke()
-                }
-            ,
+                },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Image(
-                painter = selectedImageUri?.let {
-                    rememberAsyncImagePainter(it)
-                } ?: painterResource(R.drawable.user),
+        ) {
+
+            AsyncImage(
+                model = imageUrl,
                 contentDescription = "Settings",
                 modifier = Modifier
                     .padding(16.dp)
-                    .clip(CircleShape)
-                    .size(250.dp),
-                contentScale = ContentScale.Crop
-
+                    .size(250.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.user),
+                error = painterResource(R.drawable.user)
             )
-
 
             ButtonEdit(
                 buttonText = stringResource(R.string.updatePictureStr),

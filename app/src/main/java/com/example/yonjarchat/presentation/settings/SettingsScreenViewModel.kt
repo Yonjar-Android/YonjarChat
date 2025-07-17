@@ -1,10 +1,12 @@
 package com.example.yonjarchat.presentation.settings
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
+import com.example.yonjarchat.domain.models.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +21,8 @@ class SettingsScreenViewModel @Inject constructor(
     private val repositoryImp: FirebaseRepositoryImp
 ): ViewModel() {
 
-     private var _username = MutableStateFlow("")
-     val username: StateFlow<String> = _username
+     private var _username = MutableStateFlow<User?>(null)
+     val username: StateFlow<User?> = _username
 
     private var _message = MutableStateFlow("")
     val message: StateFlow<String> = _message
@@ -35,7 +37,7 @@ class SettingsScreenViewModel @Inject constructor(
     fun getUsername(id:String) {
         viewModelScope.launch {
             val response = repositoryImp.getUserId(id)
-            _username.value = response?.username ?: ""
+            _username.value = response
         }
     }
 
@@ -46,6 +48,16 @@ class SettingsScreenViewModel @Inject constructor(
                     _message.value = it
                 })
             getUsername(id)
+        }
+    }
+
+    fun setPicture(id:String,image: Uri, context: Context, actualImage: String){
+        viewModelScope.launch {
+                repositoryImp.updatePicture(id,image,context,
+                    onResult = {
+                        _message.value = it
+                    })
+
         }
     }
 

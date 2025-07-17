@@ -1,5 +1,6 @@
 package com.example.yonjarchat.domain.repositories
 
+import android.content.Context
 import android.net.Uri
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
@@ -28,6 +29,7 @@ interface FirebaseRepository {
                              onResult: (List<MessageModel>) -> Unit): ListenerRegistration
 
     suspend fun updatePicture(id: String, image: Uri,
+                              context: Context,
                               onResult: (String) -> Unit)
 
 
