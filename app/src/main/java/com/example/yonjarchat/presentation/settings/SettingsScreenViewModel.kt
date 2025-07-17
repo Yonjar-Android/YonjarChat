@@ -1,5 +1,6 @@
 package com.example.yonjarchat.presentation.settings
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.UserPreferences

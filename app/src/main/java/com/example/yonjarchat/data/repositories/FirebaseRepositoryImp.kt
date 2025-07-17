@@ -1,11 +1,11 @@
 package com.example.yonjarchat.data.repositories
 
+import android.net.Uri
 import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.ChatDomain
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserDomain
-import com.example.yonjarchat.domain.repositories.FcmRepository
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +18,8 @@ import javax.inject.Inject
 class FirebaseRepositoryImp @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val resourceProvider: ResourceProvider) : FirebaseRepository {
+    private val resourceProvider: ResourceProvider
+) : FirebaseRepository {
 
     override suspend fun registerUser(
         email: String,
@@ -207,6 +208,14 @@ class FirebaseRepositoryImp @Inject constructor(
                 onResult(emptyList())
             }
         }
+    }
+
+    override suspend fun updatePicture(
+        id: String,
+        image: Uri,
+        onResult: (String) -> Unit
+    ) {
+
     }
 
     fun generateChatId(user1: String, user2: String): String {

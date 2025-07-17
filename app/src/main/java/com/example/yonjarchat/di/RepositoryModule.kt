@@ -28,7 +28,8 @@ object RepositoryModule {
         resourceProvider: ResourceProvider
     ): FirebaseRepository {
         return FirebaseRepositoryImp(
-            firebaseAuth, firestore, resourceProvider)
+            firebaseAuth, firestore, resourceProvider
+        )
     }
 
     @Provides
@@ -49,7 +50,7 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences{
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
         return UserPreferences(context)
     }
 

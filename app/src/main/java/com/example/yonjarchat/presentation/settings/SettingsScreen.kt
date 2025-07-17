@@ -1,9 +1,16 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.yonjarchat.presentation.settings
 
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,9 +59,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.rememberAsyncImagePainter
 import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
-import androidx.compose.ui.platform.LocalConfiguration
+import com.example.yonjarchat.sharedComponents.ButtonEdit
 
 @Composable
 fun SettingsScreen(
@@ -61,6 +73,7 @@ fun SettingsScreen(
     val darkTheme by viewModel.darkTheme.collectAsStateWithLifecycle()
     val username by viewModel.username.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    var showPicture by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val userPreferences = UserPreferences(context)
@@ -69,6 +82,8 @@ fun SettingsScreen(
             value = it
         }
     }
+
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     if (myUserId != null) {
         LaunchedEffect(Unit) {
@@ -118,12 +133,18 @@ fun SettingsScreen(
         }
 
         Image(
-            painter = painterResource(R.drawable.user),
+            painter = selectedImageUri?.let {
+                rememberAsyncImagePainter(it)
+            } ?: painterResource(R.drawable.user),
             contentDescription = "Settings",
             modifier = Modifier
                 .padding(16.dp)
                 .size(150.dp)
                 .clip(CircleShape)
+                .clickable{
+                    showPicture = true
+                },
+            contentScale = ContentScale.Crop
         )
 
         Spacer(
@@ -219,6 +240,17 @@ fun SettingsScreen(
         )
     }
 
+    if (showPicture) {
+        PictureDialog(
+            onDismiss = { showPicture = false },
+            setImage = {
+
+                imageUri -> selectedImageUri = imageUri
+
+            }
+        )
+    }
+
     BackHandler {
         navHostController.navigateUp()
     }
@@ -266,4 +298,62 @@ fun EditUsernameDialog(
             }
         }
     )
+}
+
+@Composable
+fun PictureDialog(
+    onDismiss: () -> Unit,
+    setImage: (Uri?) -> Unit
+){
+
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            setImage(uri)
+
+            // Procesar imagen seleccionada
+            Log.d("Picker", "Imagen seleccionada: $uri")
+            // Aquí puedes mostrar la imagen o guardarla
+        }
+    }
+
+    BasicAlertDialog(
+        onDismissRequest = onDismiss
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .clickable{
+                    onDismiss.invoke()
+                }
+            ,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Image(
+                painter = selectedImageUri?.let {
+                    rememberAsyncImagePainter(it)
+                } ?: painterResource(R.drawable.user),
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clip(CircleShape)
+                    .size(250.dp),
+                contentScale = ContentScale.Crop
+
+            )
+
+
+            ButtonEdit(
+                buttonText = stringResource(R.string.updatePictureStr),
+                function = {
+                    imagePickerLauncher.launch("image/*")
+                }
+            )
+
+        }
+    }
 }

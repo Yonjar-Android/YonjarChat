@@ -23,4 +23,5 @@
     <string name="editUserStr">Edit Username</string>
     <string name="enterUsernameStr">Enter your new username:</string>
     <string name="saveStr">Save</string>
+    <string name="updatePictureStr">Update Picture</string>
 </resources>
