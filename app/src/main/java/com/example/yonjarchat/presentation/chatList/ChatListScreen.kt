@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -43,7 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
@@ -167,15 +171,16 @@ fun ChatListScreen(
                 .weight(1f)
         ) {
             items(users) {
-                ChatItem( user = it,
+                ChatItem(
+                    user = it,
                     navigateToChat = {
-                    navHostController.navigate("chatScreen/${it.uid}")
-                })
+                        navHostController.navigate("chatScreen/${it.uid}")
+                    })
             }
         }
     }
 
-    if (showDialog){
+    if (showDialog) {
         DialogSignOut(
             onDismissRequest = {
                 showDialog = false
@@ -206,9 +211,16 @@ fun ChatItem(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically)
     {
-        Image(
-            painter = painterResource(R.drawable.user), contentDescription = "User Image",
+
+
+        println("Foto de perfil: ${user.imageUrl}")
+        AsyncImage(
+            model = user.imageUrl,
+            contentDescription = "User Image",
             modifier = Modifier.size(64.dp)
+                .clip(CircleShape), placeholder = painterResource(R.drawable.user),
+            error = painterResource(R.drawable.user),
+            contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -234,7 +246,7 @@ fun ChatItem(
 fun DialogSignOut(
     onDismissRequest: () -> Unit = {},
     onConfirm: () -> Unit = {}
-){
+) {
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
     ) {
@@ -244,9 +256,11 @@ fun DialogSignOut(
                 .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Text(text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold)
+        ) {
+            Text(
+                text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -271,8 +285,10 @@ fun DialogSignOut(
                         containerColor = MaterialTheme.colorScheme.onBackground
                     )
                 ) {
-                    Text(text = stringResource(R.string.signOutStr),
-                        color = Color.Black)
+                    Text(
+                        text = stringResource(R.string.signOutStr),
+                        color = Color.Black
+                    )
                 }
             }
         }

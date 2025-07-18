@@ -132,9 +132,6 @@ fun SettingsScreen(
             )
 
         }
-
-        println("Imagen: ${user?.imageUrl}")
-
         AsyncImage(
             model = user?.imageUrl,
             contentDescription = "Settings",
@@ -328,13 +325,10 @@ fun PictureDialog(
     setImage: (Uri?) -> Unit
 ) {
 
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            selectedImageUri = it
             setImage(uri)
 
             // Procesar imagen seleccionada

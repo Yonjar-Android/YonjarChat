@@ -102,7 +102,8 @@ class FirebaseRepositoryImp @Inject constructor(
                 if (user != null && document.id != firebaseAuth.currentUser?.uid) User(
                     document.id,
                     user.username,
-                    user.email
+                    user.email,
+                    user.imageUrl,
                 )
                 else null
             }
