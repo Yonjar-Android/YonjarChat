@@ -217,7 +217,8 @@ fun ChatItem(
         AsyncImage(
             model = user.imageUrl,
             contentDescription = "User Image",
-            modifier = Modifier.size(64.dp)
+            modifier = Modifier
+                .size(64.dp)
                 .clip(CircleShape), placeholder = painterResource(R.drawable.user),
             error = painterResource(R.drawable.user),
             contentScale = ContentScale.Crop
@@ -232,8 +233,11 @@ fun ChatItem(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "Last Message", fontSize = 16.sp, color = Color(0XFF4A709C),
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                text = if (user.lastMessage.isEmpty()) "Last Message" else user.lastMessage,
+                fontSize = 16.sp,
+                color = Color(0XFF4A709C),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 

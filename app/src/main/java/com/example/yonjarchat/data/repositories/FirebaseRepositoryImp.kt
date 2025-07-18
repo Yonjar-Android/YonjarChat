@@ -13,6 +13,7 @@ import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -97,15 +98,35 @@ class FirebaseRepositoryImp @Inject constructor(
     override suspend fun getUsers(): List<User> {
         return try {
             val querySnapshot = firestore.collection("Users").get().await()
+            val currentUserId = firebaseAuth.currentUser?.uid ?: return emptyList()
+
             querySnapshot.documents.mapNotNull { document ->
                 val user = document.toObject(UserDomain::class.java)
-                if (user != null && document.id != firebaseAuth.currentUser?.uid) User(
-                    document.id,
-                    user.username,
-                    user.email,
-                    user.imageUrl,
-                )
-                else null
+                val userId = document.id
+
+                if (user != null && userId != currentUserId) {
+                    val chatId = generateChatId(currentUserId, userId)
+                    val lastMessageSnapshot = firestore.collection("chats")
+                        .document(chatId)
+                        .collection("messages")
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .limit(1)
+                        .get()
+                        .await()
+
+                    val lastMessage = lastMessageSnapshot.documents.firstOrNull()
+                        ?.toObject(MessageModel::class.java)
+
+                    User(
+                        uid = document.id,
+                        username = user.username,
+                        email = user.email,
+                        imageUrl = user.imageUrl,
+                        lastMessage = lastMessage?.content ?: ""
+                    )
+                } else {
+                    null
+                }
             }
         } catch (e: Exception) {
             println("Error al obtener usuarios: ${e.message}")
