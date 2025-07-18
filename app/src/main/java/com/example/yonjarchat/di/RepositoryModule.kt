@@ -2,10 +2,8 @@ package com.example.yonjarchat.di
 
 import android.content.Context
 import com.example.yonjarchat.UserPreferences
-import com.example.yonjarchat.data.repositories.FcmRepositoryImp
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
 import com.example.yonjarchat.data.retrofit.interfaces.ImgbbApi
-import com.example.yonjarchat.domain.repositories.FcmRepository
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +13,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -44,14 +41,6 @@ object RepositoryModule {
     ): ResourceProvider {
         return ResourceProvider(context)
     }
-
-    @Singleton
-    @Provides
-    fun provideFcmRepository(
-        firestore: FirebaseFirestore
-    ): FcmRepository = FcmRepositoryImp(
-        firestore
-    )
 
     @Singleton
     @Provides

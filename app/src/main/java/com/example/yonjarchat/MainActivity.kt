@@ -133,34 +133,36 @@ class MainActivity : ComponentActivity() {
                 }
 
                 var permissionStatus by remember { mutableStateOf("Permission not Requested") }
+                var hasRequestedPermission by remember { mutableStateOf(false) }
 
-                // Android 13+ (API 33+) requiere permiso explícito
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    val permissionLauncher = rememberLauncherForActivityResult(
-                        ActivityResultContracts.RequestPermission()
-                    ) { isGranted ->
-                        permissionStatus = if (isGranted) {
-                            "Permission Granted"
-                        } else {
-                            "Permission Denied"
-                        }
-                    }
-
-
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.POST_NOTIFICATIONS
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    permissionStatus = if (isGranted) {
+                        "Permission Granted"
                     } else {
-                        permissionStatus = "Already Granted"
+                        "Permission Denied"
                     }
-
-                } else {
-                    // Para versiones anteriores a Android 13, el permiso es otorgado automáticamente
-                    permissionStatus = "Automatically Granted (Pre-Android 13)"
                 }
+
+                LaunchedEffect(Unit) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED &&
+                            !hasRequestedPermission
+                        ) {
+                            hasRequestedPermission = true
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            permissionStatus = "Already Granted"
+                        }
+                    } else {
+                        permissionStatus = "Automatically Granted (Pre-Android 13)"
+                    }
+                }
+
             }
         }
     }
