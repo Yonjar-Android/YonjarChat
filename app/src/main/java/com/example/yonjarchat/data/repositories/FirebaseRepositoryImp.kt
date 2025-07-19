@@ -11,6 +11,7 @@ import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -215,16 +216,22 @@ class FirebaseRepositoryImp @Inject constructor(
     override suspend fun getMessages(
         user1: String,
         user2: String,
-        onResult: (List<MessageModel>) -> Unit
+        lastVisible: DocumentSnapshot?,
+        onResult: (List<MessageModel>, DocumentSnapshot?) -> Unit
     ): ListenerRegistration {
 
         val chatId = generateChatId(user1, user2)
-        val messagesRef = firestore.collection("chats")
+        var query = firestore.collection("chats")
             .document(chatId)
             .collection("messages")
-            .orderBy("timestamp")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(15)
 
-        return messagesRef.addSnapshotListener { snapshot, error ->
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible)
+        }
+
+        return query.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 println("Error al obtener mensajes: ${error.message}")
                 return@addSnapshotListener
@@ -233,9 +240,11 @@ class FirebaseRepositoryImp @Inject constructor(
                 val messages = snapshot.documents.mapNotNull { doc ->
                     doc.toObject(MessageModel::class.java)
                 }
-                onResult(messages)
+                val last = snapshot.documents.lastOrNull()
+
+                onResult(messages, last)
             } else {
-                onResult(emptyList())
+                onResult(emptyList(), null)
             }
         }
     }

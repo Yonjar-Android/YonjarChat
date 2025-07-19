@@ -2,7 +2,6 @@ package com.example.yonjarchat.presentation.chat
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -51,7 +49,6 @@ import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
-import kotlin.coroutines.coroutineContext
 
 @Composable
 fun ChatScreen(
@@ -145,7 +142,13 @@ fun ChatScreen(
         // Este efecto se dispara cuando los mensajes cambian
         LaunchedEffect(chatMessages.size) {
             if (chatMessages.isNotEmpty()) {
-                listState.animateScrollToItem(chatMessages.lastIndex)
+                listState.animateScrollToItem(chatMessages.size / 2)
+            }
+        }
+
+        LaunchedEffect(listState.firstVisibleItemIndex) {
+            if (listState.firstVisibleItemIndex == 0) {
+                viewModel.observeMessages(chatUserId)
             }
         }
 
