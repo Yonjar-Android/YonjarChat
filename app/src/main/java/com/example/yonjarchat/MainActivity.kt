@@ -1,7 +1,6 @@
 package com.example.yonjarchat
 
 import android.Manifest
-import android.Manifest.permission.POST_NOTIFICATIONS
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +38,7 @@ import com.example.yonjarchat.presentation.register.RegisterScreen
 import com.example.yonjarchat.presentation.settings.SettingsScreen
 import com.example.yonjarchat.presentation.settings.SettingsScreenViewModel
 import com.example.yonjarchat.ui.theme.YonjarChatTheme
+import com.example.yonjarchat.utils.NotificationHelper
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -55,6 +54,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        NotificationHelper.createNotificationChannel(this, NotificationHelper.CHANNEL_ID)
+
         enableEdgeToEdge()
         setContent {
 
@@ -162,9 +164,11 @@ class MainActivity : ComponentActivity() {
                         permissionStatus = "Automatically Granted (Pre-Android 13)"
                     }
                 }
-
             }
         }
     }
 }
+
+
+
 

@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +50,7 @@ import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun ChatScreen(
@@ -146,10 +148,14 @@ fun ChatScreen(
             }
         }
 
-        LaunchedEffect(listState.firstVisibleItemIndex) {
-            if (listState.firstVisibleItemIndex == 0) {
-                viewModel.observeMessages(chatUserId)
-            }
+        LaunchedEffect(Unit) {
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .distinctUntilChanged()
+                .collect { index ->
+                    if (index == 0) {
+                        viewModel.observeMessages(chatUserId)
+                    }
+                }
         }
 
         LazyColumn(
