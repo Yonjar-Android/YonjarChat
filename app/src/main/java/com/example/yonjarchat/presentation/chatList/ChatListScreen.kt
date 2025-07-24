@@ -4,7 +4,6 @@ package com.example.yonjarchat.presentation.chatList
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +60,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -71,7 +71,7 @@ fun ChatListScreen(
 
     var username by remember { mutableStateOf("") }
 
-    val users by viewModel.users.collectAsStateWithLifecycle()
+    val chats by viewModel.chats.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -170,7 +170,7 @@ fun ChatListScreen(
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            items(users) {
+            items(chats) {
                 ChatItem(
                     user = it,
                     navigateToChat = {
@@ -199,7 +199,7 @@ fun ChatListScreen(
 
 @Composable
 fun ChatItem(
-    user: User,
+    user: UserChatModel,
     navigateToChat: () -> Unit = {}
 ) {
     Row(

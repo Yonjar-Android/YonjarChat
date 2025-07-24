@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
 
@@ -33,6 +34,8 @@ interface FirebaseRepository {
     suspend fun updatePicture(id: String, image: Uri,
                               context: Context,
                               onResult: (String) -> Unit)
+
+    suspend fun getChats(onResult: (List<UserChatModel>) -> Unit): ListenerRegistration
 
 
 }

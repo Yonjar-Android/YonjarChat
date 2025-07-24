@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.google.firebase.firestore.ListenerRegistration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,20 +20,23 @@ class ChatListViewModel @Inject constructor(
 
 ): ViewModel() {
 
-    private var _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users
+    private var _chats = MutableStateFlow<List<UserChatModel>>(emptyList())
+    val chats: StateFlow<List<UserChatModel>> = _chats
 
     private var _message = MutableStateFlow<String>("")
     val message: StateFlow<String> = _message
 
+    private var listenerRegistration: ListenerRegistration? = null
+
     init {
-        getUsers()
+        getChats()
     }
 
-    fun getUsers() {
+    fun getChats() {
         viewModelScope.launch {
-            _users.value = firebaseRepository.getUsers()
-            if (_users.value.isEmpty()) _message.value = "No se encontraron usuarios"
+            listenerRegistration = firebaseRepository.getChats { chatList ->
+                _chats.value = chatList
+            }
         }
     }
 
@@ -50,6 +55,11 @@ class ChatListViewModel @Inject constructor(
 
     fun clearMessage(){
         _message.value = ""
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        listenerRegistration?.remove()
     }
 
 }

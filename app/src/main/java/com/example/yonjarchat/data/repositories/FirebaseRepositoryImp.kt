@@ -7,8 +7,11 @@ import com.example.yonjarchat.data.retrofit.interfaces.ImgbbApi
 import com.example.yonjarchat.domain.models.ChatDomain
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.example.yonjarchat.utils.CombinedListener
+import com.example.yonjarchat.utils.DummyListenerRegistration
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -134,6 +137,7 @@ class FirebaseRepositoryImp @Inject constructor(
             emptyList()
         }
     }
+
 
     override suspend fun getUserId(id: String): User? {
         return try {
@@ -302,6 +306,67 @@ class FirebaseRepositoryImp @Inject constructor(
         } catch (e: Exception) {
             onResult("Error al actualizar la imagen: ${e.message}")
         }
+    }
+
+    override suspend fun getChats(onResult: (List<UserChatModel>) -> Unit): ListenerRegistration {
+        val currentUserId = firebaseAuth.currentUser?.uid ?: return DummyListenerRegistration()
+
+        val userRef = firestore.collection("Users")
+        val chatRef = firestore.collection("chats")
+
+        // Mantenemos una lista para almacenar temporalmente los resultados
+        val resultMap = mutableMapOf<String, UserChatModel>()
+
+        // Escuchar cambios en la colección de usuarios
+        val userListener = userRef.addSnapshotListener { userSnapshot, userError ->
+            if (userError != null || userSnapshot == null) return@addSnapshotListener
+
+            // Actualizamos los datos del usuario (nombre e imagen)
+            for (userDoc in userSnapshot.documents) {
+                val user = userDoc.toObject(UserDomain::class.java)
+                val userId = userDoc.id
+
+                if (user != null && userId != currentUserId) {
+                    val existing = resultMap[userId]
+                    resultMap[userId] = UserChatModel(
+                        username = user.username,
+                        imageUrl = user.imageUrl,
+                        lastMessage = existing?.lastMessage ?: "",
+                        timestamp = existing?.timestamp ?: 0L,
+                        uid = userId
+                    )
+                }
+            }
+            onResult(resultMap.values.toList())
+        }
+
+        // Escuchar cambios en la colección de chats donde el usuario esté incluido
+        val chatListener = chatRef
+            .whereArrayContains("arrayOfUsers", currentUserId)
+            .addSnapshotListener { chatSnapshot, chatError ->
+                if (chatError != null || chatSnapshot == null) return@addSnapshotListener
+
+                for (chatDoc in chatSnapshot.documents) {
+                    val chat = chatDoc.toObject(ChatDomain::class.java)
+
+                    val otherUserId = chat?.arrayOfUsers?.firstOrNull { it != currentUserId } ?: continue
+
+                    val existing = resultMap[otherUserId]
+                    if (chat != null) {
+                        resultMap[otherUserId] = UserChatModel(
+                            username = existing?.username ?: "",
+                            imageUrl = existing?.imageUrl ?: "",
+                            lastMessage = chat.lastMessage,
+                            timestamp = chat.timestamp,
+                            uid = otherUserId
+                        )
+                    }
+                }
+                onResult(resultMap.values.toList())
+            }
+
+        // Retornamos un listener combinado (puedes crear una clase para esto)
+        return CombinedListener(userListener, chatListener)
     }
 
 
