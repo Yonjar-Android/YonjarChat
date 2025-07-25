@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,10 +59,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.sharedComponents.ButtonEdit
+import com.example.yonjarchat.sharedComponents.ChargeScreen
 
 @Composable
 fun SettingsScreen(
@@ -106,165 +105,175 @@ fun SettingsScreen(
             .padding(WindowInsets.systemBars.asPaddingValues()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = {
-                    navHostController.navigateUp()
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+        if (user == null) {
+            ChargeScreen()
+        } else {
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            Text(
-                text = stringResource(R.string.settingsStr),
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-        }
-        AsyncImage(
-            model = user?.imageUrl,
-            contentDescription = "Settings",
-            modifier = Modifier
-                .padding(16.dp)
-                .size(150.dp)
-                .clip(CircleShape)
-                .clickable {
-                    showPicture = true
-                },
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(R.drawable.user),
-            error = painterResource(R.drawable.user)
-        )
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                user?.username ?: "",
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            IconButton(
-                onClick = {
-                    showEditUsernameDialog = true
-                },
-                modifier = Modifier.background(
-                    if (darkTheme) Color.Gray else Color.LightGray, CircleShape
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                )
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.darkThemeStr),
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Switch(
-                checked = darkTheme,
-                onCheckedChange =
-                    {
-                        viewModel.setDarkTheme(it)
-                    }
-            )
-        }
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        val locale = LocalConfiguration.current.locales[0]
-        val currentLanguage = when (locale.language) {
-            "en" -> "English"
-            "es" -> "Español"
-            else -> locale.displayLanguage // por si acaso
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.languageStr),
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(currentLanguage, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
-        }
-
-    }
-
-    if (showEditUsernameDialog) {
-        EditUsernameDialog(
-            currentName = user?.username ?: "",
-            onDismiss = { showEditUsernameDialog = false },
-            onSave = { newName ->
-                if (myUserId != null && newName.isNotEmpty()) {
-                    viewModel.setUsername(myUserId ?: "", newName)
-                    showEditUsernameDialog = false
-                } else {
-                    Toast.makeText(context, "Invalid username", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-    }
-
-    if (showPicture) {
-        PictureDialog(
-            imageUrl = user?.imageUrl,
-            onDismiss = { showPicture = false },
-            setImage = { imageUri ->
-                selectedImageUri = imageUri
-                if (myUserId != null && selectedImageUri != null) {
-                    viewModel.setPicture(
-                        myUserId ?: "",
-                        selectedImageUri!!,
-                        context,
-                        user?.imageUrl ?: ""
+                IconButton(
+                    onClick = {
+                        navHostController.navigateUp()
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
-                    showPicture = false
+                }
+
+                Text(
+                    text = stringResource(R.string.settingsStr),
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+            }
+            AsyncImage(
+                model = user?.imageUrl,
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(150.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        showPicture = true
+                    },
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.user),
+                error = painterResource(R.drawable.user)
+            )
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    user?.username ?: "",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                IconButton(
+                    onClick = {
+                        showEditUsernameDialog = true
+                    },
+                    modifier = Modifier.background(
+                        if (darkTheme) Color.Gray else Color.LightGray, CircleShape
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
                 }
             }
-        )
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.darkThemeStr),
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Switch(
+                    checked = darkTheme,
+                    onCheckedChange =
+                        {
+                            viewModel.setDarkTheme(it)
+                        }
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            val locale = LocalConfiguration.current.locales[0]
+            val currentLanguage = when (locale.language) {
+                "en" -> "English"
+                "es" -> "Español"
+                else -> locale.displayLanguage // por si acaso
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.languageStr),
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    currentLanguage,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+        }
+
+        if (showEditUsernameDialog) {
+            EditUsernameDialog(
+                currentName = user?.username ?: "",
+                onDismiss = { showEditUsernameDialog = false },
+                onSave = { newName ->
+                    if (myUserId != null && newName.isNotEmpty()) {
+                        viewModel.setUsername(myUserId ?: "", newName)
+                        showEditUsernameDialog = false
+                    } else {
+                        Toast.makeText(context, "Invalid username", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
+
+        if (showPicture) {
+            PictureDialog(
+                imageUrl = user?.imageUrl,
+                onDismiss = { showPicture = false },
+                setImage = { imageUri ->
+                    selectedImageUri = imageUri
+                    if (myUserId != null && selectedImageUri != null) {
+                        viewModel.setPicture(
+                            myUserId ?: "",
+                            selectedImageUri!!,
+                            context,
+                            user?.imageUrl ?: ""
+                        )
+                        showPicture = false
+                    }
+                }
+            )
+        }
     }
 
     BackHandler {

@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +32,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -166,6 +167,8 @@ fun ChatScreen(
             }
         }
 
+        var animateScroll by remember { mutableIntStateOf(0) }
+
         HorizontalDivider()
 
         val listState = rememberLazyListState()
@@ -173,7 +176,15 @@ fun ChatScreen(
         // Este efecto se dispara cuando los mensajes cambian
         LaunchedEffect(chatMessages.size) {
             if (chatMessages.isNotEmpty()) {
-                listState.animateScrollToItem(chatMessages.size / 2)
+                if (chatMessages.size <= 15){
+                    listState.animateScrollToItem(chatMessages.lastIndex)
+                }
+                else if (chatMessages.size - animateScroll == 1){
+                    listState.animateScrollToItem(chatMessages.lastIndex)
+                } else {
+                    listState.animateScrollToItem(0)
+                }
+                animateScroll = chatMessages.size
             }
         }
 

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +62,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.UserChatModel
+import com.example.yonjarchat.sharedComponents.ChargeScreen
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -103,97 +105,103 @@ fun ChatListScreen(
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = {
-                    showDialog = true
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+        if (chats.isEmpty()) {
+            ChargeScreen()
+        } else {
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            Text(
-                text = "Chats",
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            IconButton(
-                onClick = {
-                    navHostController.navigate("settingsScreen")
-                },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextFieldEdit(
-            textTitle = stringResource(R.string.searchStr),
-            value = username,
-            onValueChange = {
-                username = it
-            },
-            icon = {
                 IconButton(
                     onClick = {
-                        //Clean search
-                        username = ""
-                    }
+                        showDialog = true
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
+                Text(
+                    text = "Chats",
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                IconButton(
+                    onClick = {
+                        navHostController.navigate("settingsScreen")
+                    },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            items(chats) {
-                ChatItem(
-                    user = it,
-                    navigateToChat = {
-                        navHostController.navigate("chatScreen/${it.uid}")
-                    })
+            TextFieldEdit(
+                textTitle = stringResource(R.string.searchStr),
+                value = username,
+                onValueChange = {
+                    username = it
+                },
+                icon = {
+                    IconButton(
+                        onClick = {
+                            //Clean search
+                            username = ""
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                items(chats) {
+                    ChatItem(
+                        user = it,
+                        navigateToChat = {
+                            navHostController.navigate("chatScreen/${it.uid}")
+                        })
+                }
             }
         }
-    }
 
-    if (showDialog) {
-        DialogSignOut(
-            onDismissRequest = {
-                showDialog = false
-            },
-            onConfirm = {
-                viewModel.signOut(context)
-                showDialog = false
-            }
-        )
+        if (showDialog) {
+            DialogSignOut(
+                onDismissRequest = {
+                    showDialog = false
+                },
+                onConfirm = {
+                    viewModel.signOut(context)
+                    showDialog = false
+                }
+            )
+        }
     }
 
     BackHandler {
