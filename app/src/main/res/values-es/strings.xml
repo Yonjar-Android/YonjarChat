@@ -18,4 +18,11 @@
     <string name="areYouSureSignOutStr">¿Quieres cerrar sesión?</string>
     <string name="signOutStr">Cerrar Sesión</string>
     <string name="cancelStr">Cancelar</string>
+    <string name="settingsStr">Ajustes</string>
+    <string name="darkThemeStr">Modo Oscuro</string>
+    <string name="languageStr">Idioma</string>
+    <string name="editUserStr">Editar Nombre de Usuario</string>
+    <string name="enterUsernameStr">Ingresa tu nuevo nombre de usuario</string>
+    <string name="saveStr">Guardar</string>
+    <string name="updatePictureStr">Actualizar foto</string>
 </resources>

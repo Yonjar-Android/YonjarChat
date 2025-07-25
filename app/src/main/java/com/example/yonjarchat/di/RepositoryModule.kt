@@ -1,9 +1,9 @@
 package com.example.yonjarchat.di
 
 import android.content.Context
-import com.example.yonjarchat.data.repositories.FcmRepositoryImp
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
-import com.example.yonjarchat.domain.repositories.FcmRepository
+import com.example.yonjarchat.data.retrofit.interfaces.ImgbbApi
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -24,10 +24,14 @@ object RepositoryModule {
     fun provideFirebaseRepository(
         firebaseAuth: FirebaseAuth,
         firestore: FirebaseFirestore,
+        imgbbApi: ImgbbApi,
         resourceProvider: ResourceProvider
     ): FirebaseRepository {
         return FirebaseRepositoryImp(
-            firebaseAuth, firestore, resourceProvider)
+            firebaseAuth, firestore,
+            imgbbApi = imgbbApi,
+            resourceProvider = resourceProvider
+        )
     }
 
     @Provides
@@ -40,9 +44,8 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideFcmRepository(
-        firestore: FirebaseFirestore
-    ): FcmRepository = FcmRepositoryImp(
-        firestore
-    )
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
+        return UserPreferences(context)
+    }
+
 }

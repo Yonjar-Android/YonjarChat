@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.models.User
-import com.example.yonjarchat.domain.repositories.FcmRepository
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,32 +16,23 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ChatListViewModel @Inject constructor(
-    private val firebaseRepository: FirebaseRepository,
-    private val fcmRepository: FcmRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseRepository: FirebaseRepository
 
 ): ViewModel() {
 
-    private var _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users
+    private var _chats = MutableStateFlow<List<UserChatModel>>(emptyList())
+    val chats: StateFlow<List<UserChatModel>> = _chats
 
     private var _message = MutableStateFlow<String>("")
     val message: StateFlow<String> = _message
 
-    init {
-        getUsers()
+    private var listenerRegistration: ListenerRegistration? = null
 
-        fcmRepository.getCurrentToken { token ->
-            if (token != null) {
-                fcmRepository.saveTokenToDatabase(firebaseAuth.currentUser?.uid ?: "", token)
-            }
-        }
-    }
-
-    fun getUsers() {
+    fun getChats(context: Context) {
         viewModelScope.launch {
-            _users.value = firebaseRepository.getUsers()
-            if (_users.value.isEmpty()) _message.value = "No se encontraron usuarios"
+            listenerRegistration = firebaseRepository.getChats(context) { chatList ->
+                _chats.value = chatList
+            }
         }
     }
 
@@ -60,6 +51,11 @@ class ChatListViewModel @Inject constructor(
 
     fun clearMessage(){
         _message.value = ""
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        listenerRegistration?.remove()
     }
 
 }

@@ -4,7 +4,6 @@ package com.example.yonjarchat.presentation.chatList
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,25 +22,31 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,8 +58,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
-import com.example.yonjarchat.domain.models.User
+import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -65,7 +71,7 @@ fun ChatListScreen(
 
     var username by remember { mutableStateOf("") }
 
-    val users by viewModel.users.collectAsStateWithLifecycle()
+    val chats by viewModel.chats.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -85,11 +91,16 @@ fun ChatListScreen(
         viewModel.clearMessage()
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.getChats(context = context)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
-            .padding(horizontal = 8.dp), // Espaciado horizontal opcional
+            .padding(horizontal = 8.dp)
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -104,7 +115,8 @@ fun ChatListScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -112,18 +124,20 @@ fun ChatListScreen(
                 text = "Chats",
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             IconButton(
                 onClick = {
-
+                    navHostController.navigate("settingsScreen")
                 },
                 modifier = Modifier.align(Alignment.TopEnd)
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -145,7 +159,8 @@ fun ChatListScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        tint = Color.Black
                     )
                 }
 
@@ -159,16 +174,17 @@ fun ChatListScreen(
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            items(users) {
-                ChatItem( user = it,
+            items(chats) {
+                ChatItem(
+                    user = it,
                     navigateToChat = {
-                    navHostController.navigate("chatScreen/${it.uid}")
-                })
+                        navHostController.navigate("chatScreen/${it.uid}")
+                    })
             }
         }
     }
 
-    if (showDialog){
+    if (showDialog) {
         DialogSignOut(
             onDismissRequest = {
                 showDialog = false
@@ -187,7 +203,7 @@ fun ChatListScreen(
 
 @Composable
 fun ChatItem(
-    user: User,
+    user: UserChatModel,
     navigateToChat: () -> Unit = {}
 ) {
     Row(
@@ -199,9 +215,17 @@ fun ChatItem(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically)
     {
-        Image(
-            painter = painterResource(R.drawable.user), contentDescription = "User Image",
-            modifier = Modifier.size(64.dp)
+
+
+        println("Foto de perfil: ${user.imageUrl}")
+        AsyncImage(
+            model = user.imageUrl,
+            contentDescription = "User Image",
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape), placeholder = painterResource(R.drawable.user),
+            error = painterResource(R.drawable.user),
+            contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -209,11 +233,15 @@ fun ChatItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = user.username, fontWeight = FontWeight.Bold, fontSize = 18.sp,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "Last Message", fontSize = 16.sp, color = Color(0XFF4A709C),
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                text = if (user.lastMessage.isEmpty()) "Last Message" else user.lastMessage,
+                fontSize = 16.sp,
+                color = Color(0XFF4A709C),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -226,18 +254,21 @@ fun ChatItem(
 fun DialogSignOut(
     onDismissRequest: () -> Unit = {},
     onConfirm: () -> Unit = {}
-){
+) {
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Text(text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center)
+        ) {
+            Text(
+                text = stringResource(R.string.areYouSureSignOutStr), textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -246,7 +277,10 @@ fun DialogSignOut(
                 TextButton(
                     onClick = {
                         onDismissRequest.invoke()
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
                     Text(text = stringResource(R.string.cancelStr))
                 }
@@ -254,9 +288,15 @@ fun DialogSignOut(
                 Button(
                     onClick = {
                         onConfirm.invoke()
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
-                    Text(text = stringResource(R.string.signOutStr))
+                    Text(
+                        text = stringResource(R.string.signOutStr),
+                        color = Color.Black
+                    )
                 }
             }
         }

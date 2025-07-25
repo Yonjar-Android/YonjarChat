@@ -1,6 +1,7 @@
 package com.example.yonjarchat.presentation.login
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +76,9 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
-            .padding(horizontal = 8.dp), // Espaciado horizontal opcional
+            .padding(horizontal = 8.dp) // Espaciado horizontal opcional
+            .background(MaterialTheme.colorScheme.background),
+
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -87,7 +92,8 @@ fun LoginScreen(
                 text = stringResource(id = R.string.signInStr),
                 modifier = Modifier.align(Alignment.Center),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -97,7 +103,8 @@ fun LoginScreen(
             stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
             icon = {
                 Icon(
-                    imageVector = Icons.Rounded.Email, contentDescription = "Email"
+                    imageVector = Icons.Rounded.Email, contentDescription = "Email",
+                    tint = Color.Black
                 )
             }
         ) {
@@ -114,7 +121,8 @@ fun LoginScreen(
                 }) {
                     Icon(
                         imageVector = if (showPassword) Icons.Rounded.Close else Icons.Rounded.Face,
-                        contentDescription = "Show password"
+                        contentDescription = "Show password",
+                        tint = Color.Black
                     )
                 }
             }

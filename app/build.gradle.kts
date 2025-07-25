@@ -21,6 +21,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -97,5 +98,14 @@ dependencies {
     //Notificaciones
 
     implementation(libs.androidx.core.ktx)
+
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
+    // Retrofit
+
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
 }
