@@ -1,17 +1,28 @@
 package com.example.yonjarchat.presentation.chat
 
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,35 +32,49 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.MessageDomain
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
+import com.example.yonjarchat.utils.ImageHelper
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
@@ -59,12 +84,16 @@ fun ChatScreen(
     viewModel: ChatScreenViewModel = hiltViewModel()
 ) {
 
+    val context = LocalContext.current
+
     LaunchedEffect(chatUserId) {
         viewModel.getUser(chatUserId)
-        viewModel.observeMessages(chatUserId)
+        viewModel.observeMessages(chatUserId, context)
     }
 
-    val context = LocalContext.current
+    var showFullImage by remember { mutableStateOf(false) }
+    var imageToShow by remember { mutableStateOf("") }
+
     val userPreferences = UserPreferences(context)
     val myUserId by produceState<String?>(initialValue = null) {
         userPreferences.userId.collect {
@@ -153,7 +182,7 @@ fun ChatScreen(
                 .distinctUntilChanged()
                 .collect { index ->
                     if (index == 0) {
-                        viewModel.observeMessages(chatUserId)
+                        viewModel.observeMessages(chatUserId, context)
                     }
                 }
         }
@@ -166,15 +195,59 @@ fun ChatScreen(
             state = listState
         ) {
             items(chatMessages) { message ->
-                ChatMessageItem(message = MessageDomain(
-                    messageId = "",
-                    chatId = "",
-                    senderId = message.senderId,
-                    receiverId = message.receiverId,
-                    content = message.content,
-                    timestamp = message.timestamp,
-                    isSeen = false
-                ), myUserId = myUserId ?: "")
+
+                if (ImageHelper.isImageUrl(message.content)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        horizontalAlignment = if (message.senderId == myUserId) Alignment.End else Alignment.Start
+                    ) {
+                        AsyncImage(
+                            model = message.content,
+                            contentDescription = "Imagen enviada",
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = .85f)
+                                .height(200.dp)
+                                .clickable {
+                                    imageToShow = message.content
+                                    showFullImage = true
+                                },
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                } else {
+                    ChatMessageItem(
+                        message = MessageDomain(
+                            messageId = "",
+                            chatId = "",
+                            senderId = message.senderId,
+                            receiverId = message.receiverId,
+                            content = message.content,
+                            timestamp = message.timestamp,
+                            isSeen = false
+                        ), myUserId = myUserId ?: ""
+                    )
+                }
+
+            }
+        }
+
+        var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        var showImageDialog by remember { mutableStateOf(false) }
+
+        // Launcher para cargar imagen
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+
+                selectedImageUri = it
+                showImageDialog = true
+
+                // Procesar imagen seleccionada
+                Log.d("Picker", "Imagen seleccionada: $uri")
+                // Aquí puedes mostrar la imagen o guardarla
             }
         }
 
@@ -185,22 +258,66 @@ fun ChatScreen(
             singleLine = false,
             onValueChange = { message = it },
             icon = {
-                IconButton(
-                    onClick = {
-                        // Clean message
-                        viewModel.sendMessage(
-                         message.trim()
+                Row {
+                    if (message.isEmpty()) {
+                        IconButton(
+                            onClick = {
+                                // Clean message
+                                imagePickerLauncher.launch("image/*")
+                                message = ""
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_image_24),
+                                contentDescription = "Back",
+                                tint = Color.Black,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+
+
+                    IconButton(
+                        onClick = {
+                            // Clean message
+                            viewModel.sendMessage(
+                                message.trim()
+                            )
+                            message = ""
+                        }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Back",
+                            tint = Color.Black
                         )
-                        message = ""
-                    }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
+                    }
                 }
+
             }
         )
+
+        if (showImageDialog && selectedImageUri != null) {
+            ConfirmImage(
+                selectedImageUri = selectedImageUri,
+                sendPicture = {
+                    if (selectedImageUri != null) {
+                        viewModel.sendImage(selectedImageUri!!, context)
+                    }
+                    showImageDialog = false
+                    selectedImageUri = null
+                },
+                onDismiss = {
+                    showImageDialog = false
+                    selectedImageUri = null
+                }
+            )
+        }
+
+        if (showFullImage) {
+            ShowFullImage(imageUrl = imageToShow) {
+                showFullImage = false
+            }
+        }
     }
 }
 
@@ -208,7 +325,7 @@ fun ChatScreen(
 fun ChatMessageItem(
     message: MessageDomain,
     myUserId: String = "",
-    ) {
+) {
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -232,3 +349,100 @@ fun ChatMessageItem(
 
     Spacer(modifier = Modifier.height(16.dp))
 }
+
+@Composable
+fun ConfirmImage(
+    selectedImageUri: Uri?,
+    sendPicture: () -> Unit = {},
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss.invoke() },
+        title = { Text("Enviar imagen") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = rememberAsyncImagePainter(selectedImageUri),
+                    contentDescription = "Imagen seleccionada",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("¿Deseas enviar esta imagen?")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                // Lógica para enviar la imagen
+                Log.d("EnviarImagen", "URI a enviar: $selectedImageUri")
+                sendPicture.invoke()
+            }) {
+                Text("Enviar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismiss.invoke()
+            }) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun ShowFullImage(
+    imageUrl: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        var scale by remember { mutableFloatStateOf(1f) }
+        var offset by remember { mutableStateOf(Offset.Zero) }
+
+        val state = rememberTransformableState { zoomChange, offsetChange, _ ->
+            scale = (scale * zoomChange).coerceIn(1f, 5f)
+
+            // Limitar el desplazamiento según el tamaño escalado
+            val maxOffsetX = (scale - 1f) * 2000f // puedes ajustar el 2000f según sea necesario
+            val maxOffsetY = (scale - 1f) * 2000f
+
+            val newOffsetX = (offset.x + offsetChange.x).coerceIn(-maxOffsetX, maxOffsetX)
+            val newOffsetY = (offset.y + offsetChange.y).coerceIn(-maxOffsetY, maxOffsetY)
+
+            offset = Offset(newOffsetX, newOffsetY)
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { onDismiss() })
+                }
+                .transformable(state)
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Imagen completa",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+
+

@@ -1,7 +1,10 @@
 package com.example.yonjarchat.presentation.chat
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
@@ -12,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -40,15 +44,18 @@ class ChatScreenViewModel @Inject constructor(
     }
 
     fun observeMessages(
-        userId: String
+        userId: String,
+        context: Context
     ) {
+        val userPreferences = UserPreferences(context)
+
         viewModelScope.launch {
             if (isLoadingMore) return@launch
             isLoadingMore = true
 
             listener = firebaseRepository.getMessages(
                 user1 = userId,
-                user2 = firebaseAuth.currentUser?.uid ?: "",
+                user2 = userPreferences.userId.first() ?: "",
                 lastVisible = lastVisible,
                 onResult = { messages, lastDoc ->
                     lastVisible = lastDoc
@@ -79,6 +86,23 @@ class ChatScreenViewModel @Inject constructor(
                 content = messageContent
             )
 
+        }
+    }
+
+    fun sendImage(
+        imageUri: Uri,
+        context: Context,
+        ){
+        viewModelScope.launch {
+            firebaseRepository.sendPicture(
+                senderId = firebaseAuth.currentUser?.uid ?: "",
+                receiverId = user.value?.uid ?: "",
+                image = imageUri,
+                context = context,
+                onResult = {
+                   _message.value = it
+                }
+            )
         }
     }
 
