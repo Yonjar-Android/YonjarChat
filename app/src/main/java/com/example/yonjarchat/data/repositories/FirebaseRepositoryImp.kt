@@ -3,6 +3,7 @@ package com.example.yonjarchat.data.repositories
 import android.content.Context
 import android.net.Uri
 import com.example.yonjarchat.R
+import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.data.retrofit.interfaces.ImgbbApi
 import com.example.yonjarchat.domain.models.ChatDomain
 import com.example.yonjarchat.domain.models.MessageModel
@@ -12,12 +13,14 @@ import com.example.yonjarchat.domain.models.UserDomain
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.CombinedListener
 import com.example.yonjarchat.utils.DummyListenerRegistration
+import com.example.yonjarchat.utils.ImageHelper
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -193,9 +196,11 @@ class FirebaseRepositoryImp @Inject constructor(
 
             } else {
                 // Chat ya existe, solo actualizamos campos
+                val message = if (ImageHelper.isImageUrl(content)) "Imagen" else content
+
                 chatRef.update(
                     mapOf(
-                        "lastMessage" to content,
+                        "lastMessage" to message,
                         "timestamp" to System.currentTimeMillis()
                     )
                 ).await()
@@ -308,8 +313,63 @@ class FirebaseRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun getChats(onResult: (List<UserChatModel>) -> Unit): ListenerRegistration {
-        val currentUserId = firebaseAuth.currentUser?.uid ?: return DummyListenerRegistration()
+    override suspend fun sendPicture(
+        senderId: String,
+        receiverId: String,
+        image: Uri,
+        context: Context,
+        onResult: (String) -> Unit
+    ) {
+        try{
+            // Paso 1: Convertir Uri a File temporal
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(image)
+            val file = File.createTempFile("profile_image", ".jpg", context.cacheDir)
+            inputStream.use {
+                file.outputStream().use { output ->
+                    it?.copyTo(output)
+                }
+            }
+
+            // Paso 2: Crear Multipart para Retrofit
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+            // Paso 3: Crear los RequestBody para los campos "key" y "name"
+            val apiKey = "78e5c23bd951392cb3c03ebb6f428714"
+            val apiKeyBody = apiKey.toRequestBody("text/plain".toMediaType())
+            val nameBody = "image_picture".toRequestBody("text/plain".toMediaType())
+
+            // Paso 4: Subir imagen a ImgBB
+            val response = imgbbApi.uploadImage(
+                apiKey = apiKeyBody,
+                image = imagePart,
+                name = nameBody
+            )
+
+            // Paso 5: Verificar la respuesta y actualizar Firestore
+            if (response.isSuccessful && response.body()?.data?.url != null) {
+                val imageUrl = response.body()!!.data.url
+
+                sendMessage(
+                    senderId = senderId,
+                    receiverId = receiverId,
+                    content = imageUrl
+                )
+                onResult("Imagen enviada exitosamente")
+            } else {
+                onResult("Error al subir la imagen: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            onResult("Error al enviar la imagen: ${e.message}")
+        }
+    }
+
+    override suspend fun getChats(context: Context ,onResult: (List<UserChatModel>) -> Unit): ListenerRegistration {
+
+        val userPreferences = UserPreferences(context)
+
+        val currentUserId = userPreferences.userId.first() ?: return DummyListenerRegistration()
 
         val userRef = firestore.collection("Users")
         val chatRef = firestore.collection("chats")

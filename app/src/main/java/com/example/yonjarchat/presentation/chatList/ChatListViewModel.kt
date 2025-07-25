@@ -28,13 +28,9 @@ class ChatListViewModel @Inject constructor(
 
     private var listenerRegistration: ListenerRegistration? = null
 
-    init {
-        getChats()
-    }
-
-    fun getChats() {
+    fun getChats(context: Context) {
         viewModelScope.launch {
-            listenerRegistration = firebaseRepository.getChats { chatList ->
+            listenerRegistration = firebaseRepository.getChats(context) { chatList ->
                 _chats.value = chatList
             }
         }

@@ -11,7 +11,7 @@ import com.google.firebase.firestore.ListenerRegistration
 interface FirebaseRepository {
     suspend fun registerUser(
         email: String, password: String, username: String
-    ):String
+    ): String
 
     fun loginUser(email: String, password: String, onResult: (String) -> Unit)
 
@@ -27,15 +27,27 @@ interface FirebaseRepository {
 
     suspend fun sendMessage(senderId: String, receiverId: String, content: String)
 
-    suspend fun getMessages(user1: String, user2: String,
-                            lastVisible: DocumentSnapshot?,
-                            onResult: (List<MessageModel>,DocumentSnapshot?) -> Unit): ListenerRegistration
+    suspend fun getMessages(
+        user1: String, user2: String,
+        lastVisible: DocumentSnapshot?,
+        onResult: (List<MessageModel>, DocumentSnapshot?) -> Unit
+    ): ListenerRegistration
 
-    suspend fun updatePicture(id: String, image: Uri,
-                              context: Context,
-                              onResult: (String) -> Unit)
+    suspend fun updatePicture(
+        id: String, image: Uri,
+        context: Context,
+        onResult: (String) -> Unit
+    )
 
-    suspend fun getChats(onResult: (List<UserChatModel>) -> Unit): ListenerRegistration
+    suspend fun sendPicture(
+        senderId: String,
+        receiverId: String,
+        image: Uri,
+        context: Context,
+        onResult: (String) -> Unit
+    )
+
+    suspend fun getChats(context: Context,onResult: (List<UserChatModel>) -> Unit): ListenerRegistration
 
 
 }

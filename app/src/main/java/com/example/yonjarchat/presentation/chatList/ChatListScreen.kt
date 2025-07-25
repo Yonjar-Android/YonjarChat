@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +60,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
-import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
@@ -89,6 +89,10 @@ fun ChatListScreen(
 
         Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
         viewModel.clearMessage()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.getChats(context = context)
     }
 
     Column(
