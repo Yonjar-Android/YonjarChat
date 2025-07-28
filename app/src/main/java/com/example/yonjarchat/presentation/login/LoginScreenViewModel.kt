@@ -29,12 +29,12 @@ class LoginScreenViewModel @Inject constructor(
 
         if (validations(email, password)){
             firebaseRepository.loginUser(email, password){
-                _message.value = it
                 if (it == resourceProvider.getString(R.string.youLoggedInStr)){
-                    if (firebaseAuth.currentUser != null){
+                    if (firebaseAuth.currentUser?.uid != null){
                         viewModelScope.launch {
                             val userPreferences = UserPreferences(context)
                             userPreferences.saveUserId(firebaseAuth.currentUser!!.uid)
+                            _message.value = it
                             println("User id viewModel ${userPreferences.userId.first()}")
                         }
                     }

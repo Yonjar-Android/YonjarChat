@@ -41,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.R
 import com.example.yonjarchat.sharedComponents.ButtonEdit
+import com.example.yonjarchat.sharedComponents.ChargeScreen
 import com.example.yonjarchat.sharedComponents.TextButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
@@ -53,7 +54,10 @@ fun RegisterScreen(
     val message by viewModel.message.collectAsState()
     val context = LocalContext.current
 
+    var loading by remember { mutableStateOf(false) }
+
     if (message == "Usuario creado exitosamente") {
+        loading = false
         navHostController.navigate("loginScreen")
         viewModel.clearMessage()
     }
@@ -61,6 +65,7 @@ fun RegisterScreen(
     if (message.isNotEmpty()) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         viewModel.clearMessage()
+        loading = false
     }
 
     // variables
@@ -72,113 +77,120 @@ fun RegisterScreen(
     var showPassword by remember { mutableStateOf(false) }
     var showRepeatPassword by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
-            .padding(horizontal = 8.dp), // Espaciado horizontal opcional
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
+
+
+    if (loading) {
+        ChargeScreen()
+    } else {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
+                .padding(horizontal = 8.dp), // Espaciado horizontal opcional
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(
-                onClick = {
-                    navHostController.navigateUp()
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
+                IconButton(
+                    onClick = {
+                        navHostController.navigateUp()
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                Text(
+                    text = stringResource(id = R.string.createAccountStr),
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            Text(
-                text = stringResource(id = R.string.createAccountStr),
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+            TextFieldEdit(stringResource(id = R.string.usernameStr), username) {
+                username = it
+            }
 
-        TextFieldEdit(stringResource(id = R.string.usernameStr), username) {
-            username = it
-        }
-
-        TextFieldEdit(
-            stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Email, contentDescription = "Email",
-                    tint = Color.Black
-                )
-            }) {
-            email = it
-        }
-
-        TextFieldEdit(
-            stringResource(id = R.string.passwordStr), password,
-            keyboardType = KeyboardType.Password,
-            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            icon = {
-                IconButton(onClick = {
-                    showPassword = !showPassword
-                }) {
+            TextFieldEdit(
+                stringResource(id = R.string.emailStr), email, keyboardType = KeyboardType.Email,
+                icon = {
                     Icon(
-                        imageVector = if (showPassword) Icons.Rounded.Close else Icons.Rounded.Face,
-                        contentDescription = "Show password",
+                        imageVector = Icons.Rounded.Email, contentDescription = "Email",
                         tint = Color.Black
                     )
-                }
-            }
-        ) {
-            password = it
-        }
-
-        TextFieldEdit(
-            stringResource(id = R.string.repeatPwd),
-            repeatPassword,
-            keyboardType = KeyboardType.Password,
-            visualTransformation = if (showRepeatPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            icon = {
-                IconButton(onClick = {
-                    showRepeatPassword = !showRepeatPassword
                 }) {
-                    Icon(
-                        imageVector = if (showRepeatPassword) Icons.Rounded.Close else Icons.Rounded.Face,
-                        contentDescription = "Show repeat password",
-                        tint = Color.Black
-                    )
-                }
+                email = it
             }
-        ) {
-            repeatPassword = it
-        }
 
-        ButtonEdit(
-            buttonText = stringResource(id = R.string.createAccountStr),
-            function = {
-                viewModel.registerUser(email, password, username, repeatPassword)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButtonEdit(
-            text = stringResource(id = R.string.alreadyHaveAnAccountStr),
-            function = {
-                navHostController.navigate("loginScreen") {
-                    popUpTo("loginScreen") {
-                        inclusive = true
+            TextFieldEdit(
+                stringResource(id = R.string.passwordStr), password,
+                keyboardType = KeyboardType.Password,
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                icon = {
+                    IconButton(onClick = {
+                        showPassword = !showPassword
+                    }) {
+                        Icon(
+                            imageVector = if (showPassword) Icons.Rounded.Close else Icons.Rounded.Face,
+                            contentDescription = "Show password",
+                            tint = Color.Black
+                        )
                     }
                 }
-            })
+            ) {
+                password = it
+            }
+
+            TextFieldEdit(
+                stringResource(id = R.string.repeatPwd),
+                repeatPassword,
+                keyboardType = KeyboardType.Password,
+                visualTransformation = if (showRepeatPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                icon = {
+                    IconButton(onClick = {
+                        showRepeatPassword = !showRepeatPassword
+                    }) {
+                        Icon(
+                            imageVector = if (showRepeatPassword) Icons.Rounded.Close else Icons.Rounded.Face,
+                            contentDescription = "Show repeat password",
+                            tint = Color.Black
+                        )
+                    }
+                }
+            ) {
+                repeatPassword = it
+            }
+
+            ButtonEdit(
+                buttonText = stringResource(id = R.string.createAccountStr),
+                function = {
+                    viewModel.registerUser(email, password, username, repeatPassword)
+                    loading = true
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButtonEdit(
+                text = stringResource(id = R.string.alreadyHaveAnAccountStr),
+                function = {
+                    navHostController.navigate("loginScreen") {
+                        popUpTo("loginScreen") {
+                            inclusive = true
+                        }
+                    }
+                })
+        }
     }
 }
 
