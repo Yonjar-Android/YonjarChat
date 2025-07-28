@@ -2,7 +2,13 @@
 
 package com.example.yonjarchat.presentation.settings
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -56,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -239,6 +246,10 @@ fun SettingsScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.size(24.dp))
+
+            PermissionsSettingsScreen()
+
         }
 
         if (showEditUsernameDialog) {
@@ -381,3 +392,167 @@ fun PictureDialog(
         }
     }
 }
+
+@Composable
+fun PermissionsSettingsScreen() {
+    val context = LocalContext.current
+
+    val notificationPermission = Manifest.permission.POST_NOTIFICATIONS
+    val cameraPermission = Manifest.permission.CAMERA
+
+    val notificationGranted = remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ContextCompat.checkSelfPermission(
+                    context,
+                    notificationPermission
+                ) == PackageManager.PERMISSION_GRANTED
+            else true // versiones anteriores no lo requieren
+        )
+    }
+
+    val cameraGranted = remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                cameraPermission
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationGranted.value = granted
+    }
+
+    var showNotificationPermissionDialog by remember { mutableStateOf(false) }
+
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        cameraGranted.value = granted
+    }
+
+    var showCameraPermissionDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Permisos", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.height(16.dp))
+
+        PermissionSwitch(
+            title = "Permitir notificaciones",
+            checked = notificationGranted.value,
+            onCheckedChange = { isChecked ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (isChecked && !notificationGranted.value) {
+                        // Activar: solicitar permiso
+                        notificationLauncher.launch(notificationPermission)
+                    } else if (!isChecked && notificationGranted.value) {
+                        // Desactivar: ya está concedido, redirigir a ajustes
+                        showNotificationPermissionDialog = true
+                    }
+                } else {
+                    showNotificationPermissionDialog = true
+                }
+            }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        PermissionSwitch(
+            title = "Permitir uso de la cámara",
+            checked = cameraGranted.value,
+            onCheckedChange = { isChecked ->
+                if (isChecked) {
+                    if (!cameraGranted.value) {
+                        cameraLauncher.launch(cameraPermission)
+                    }
+                } else {
+                    showCameraPermissionDialog = true
+                }
+            }
+        )
+    }
+
+    if (showCameraPermissionDialog) {
+        showPermissionRevocationDialog(context, "la cámara")
+    }
+
+    if (showNotificationPermissionDialog) {
+        showPermissionRevocationDialog(context, "las notificaciones")
+    }
+
+}
+
+@Composable
+fun PermissionSwitch(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = { onCheckedChange(it) }
+        )
+    }
+}
+
+fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    )
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}
+
+@Composable
+fun showPermissionRevocationDialog(context: Context, permissionName: String) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    openAppSettings(context)
+                    showDialog = false
+                }) {
+                    Text("Ir a Ajustes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
+            },
+            title = { Text("Revocar permiso") },
+            text = {
+                Text("Para revocar el permiso de $permissionName, ve a los ajustes de la aplicación.")
+            }
+        )
+    }
+}
+
+
