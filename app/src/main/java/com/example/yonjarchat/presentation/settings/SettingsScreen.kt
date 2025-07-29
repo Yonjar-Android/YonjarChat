@@ -70,6 +70,7 @@ import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.ChargeScreen
+import com.example.yonjarchat.utils.NetworkUtils
 
 @Composable
 fun SettingsScreen(
@@ -180,7 +181,8 @@ fun SettingsScreen(
                     },
                     modifier = Modifier.background(
                         if (darkTheme) Color.Gray else Color.LightGray, CircleShape
-                    )
+                    ),
+                    enabled = NetworkUtils.isInternetAvailable(context)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -382,12 +384,14 @@ fun PictureDialog(
                 error = painterResource(R.drawable.user)
             )
 
-            ButtonEdit(
-                buttonText = stringResource(R.string.updatePictureStr),
-                function = {
-                    imagePickerLauncher.launch("image/*")
-                }
-            )
+            if (NetworkUtils.isInternetAvailable(LocalContext.current)){
+                ButtonEdit(
+                    buttonText = stringResource(R.string.updatePictureStr),
+                    function = {
+                        imagePickerLauncher.launch("image/*")
+                    }
+                )
+            }
 
         }
     }
