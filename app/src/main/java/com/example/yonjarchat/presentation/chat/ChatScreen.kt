@@ -176,13 +176,12 @@ fun ChatScreen(
         // Este efecto se dispara cuando los mensajes cambian
         LaunchedEffect(chatMessages.size) {
             if (chatMessages.isNotEmpty()) {
-                if (chatMessages.size <= 15){
+                if (chatMessages.size <= 15) {
                     listState.animateScrollToItem(chatMessages.lastIndex)
-                }
-                else if (chatMessages.size - animateScroll == 1){
+                } else if (chatMessages.size - animateScroll == 1) {
                     listState.animateScrollToItem(chatMessages.lastIndex)
                 } else {
-                    listState.animateScrollToItem(0)
+                    listState.animateScrollToItem(4)
                 }
                 animateScroll = chatMessages.size
             }

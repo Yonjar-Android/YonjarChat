@@ -30,8 +30,17 @@ interface FirebaseRepository {
     suspend fun getMessages(
         user1: String, user2: String,
         lastVisible: DocumentSnapshot?,
+        context: Context,
         onResult: (List<MessageModel>, DocumentSnapshot?) -> Unit
     ): ListenerRegistration
+
+    suspend fun getMessagesFromRoom(
+        user1: String,
+        user2: String,
+        offset: Int,
+        limit: Int,
+        onResult: (List<MessageModel>) -> Unit
+    )
 
     suspend fun updatePicture(
         id: String, image: Uri,

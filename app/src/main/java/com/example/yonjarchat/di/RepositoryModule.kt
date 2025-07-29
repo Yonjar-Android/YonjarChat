@@ -4,6 +4,9 @@ import android.content.Context
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.data.repositories.FirebaseRepositoryImp
 import com.example.yonjarchat.data.retrofit.interfaces.ImgbbApi
+import com.example.yonjarchat.data.room.dao.ChatDao
+import com.example.yonjarchat.data.room.dao.MessageDao
+import com.example.yonjarchat.data.room.dao.UserDao
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -25,12 +28,18 @@ object RepositoryModule {
         firebaseAuth: FirebaseAuth,
         firestore: FirebaseFirestore,
         imgbbApi: ImgbbApi,
-        resourceProvider: ResourceProvider
+        resourceProvider: ResourceProvider,
+        chatDao: ChatDao,
+        messageDao: MessageDao,
+        userDao: UserDao
     ): FirebaseRepository {
         return FirebaseRepositoryImp(
             firebaseAuth, firestore,
             imgbbApi = imgbbApi,
-            resourceProvider = resourceProvider
+            resourceProvider = resourceProvider,
+            chatDao = chatDao,
+            messageDao = messageDao,
+            userDao = userDao
         )
     }
 
