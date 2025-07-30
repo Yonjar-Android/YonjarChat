@@ -369,7 +369,8 @@ fun ConfirmImage(
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss.invoke() },
-        title = { Text("Enviar imagen") },
+        title = { Text(
+            stringResource(R.string.sendImageStr)) },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
@@ -381,7 +382,9 @@ fun ConfirmImage(
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("¿Deseas enviar esta imagen?")
+                Text(
+                    stringResource(R.string.wouldYouLikeSendImageStr),
+                )
             }
         },
         confirmButton = {
@@ -389,14 +392,18 @@ fun ConfirmImage(
                 Log.d("EnviarImagen", "URI a enviar: $selectedImageUri")
                 sendPicture.invoke()
             }) {
-                Text("Enviar")
+                Text(
+                    stringResource(R.string.sendStr)
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onDismiss.invoke()
             }) {
-                Text("Cancelar")
+                Text(
+                    stringResource(R.string.cancelStr),
+                )
             }
         }
     )

@@ -25,4 +25,16 @@
     <string name="enterUsernameStr">Ingresa tu nuevo nombre de usuario</string>
     <string name="saveStr">Guardar</string>
     <string name="updatePictureStr">Actualizar foto</string>
+    <string name="permissionsStr">Permisos</string>
+    <string name="allowNotiStr">Permitir notificaciones</string>
+    <string name="cameraPermiStr">Permitir uso de la cámara</string>
+    <string name="cameraStr">la cámara</string>
+    <string name="notificationsStr">las notificaciones</string>
+    <string name="goToSetStr">Ir a ajustes</string>
+    <string name="revokePermiStr">Revocar permiso</string>
+    <string name="revokePermiTextStr">Para revocar el permiso de %1$s, ve a los ajustes de la aplicación.</string>
+    <string name="sendStr">Enviar</string>
+    <string name="sendImageStr">Enviar imagen</string>
+    <string name="wouldYouLikeSendImageStr">¿Deseas enviar esta imagen?</string>
+
 </resources>

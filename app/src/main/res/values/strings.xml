@@ -24,4 +24,16 @@
     <string name="enterUsernameStr">Enter your new username:</string>
     <string name="saveStr">Save</string>
     <string name="updatePictureStr">Update Picture</string>
+    <string name="permissionsStr">Permissions</string>
+    <string name="allowNotiStr">Allow notifications</string>
+    <string name="cameraPermiStr">Allow Camera permission</string>
+    <string name="cameraStr">camera</string>
+    <string name="notificationsStr">notifications</string>
+    <string name="goToSetStr">Go to settings</string>
+    <string name="revokePermiStr">Revoke permission</string>
+    <string name="revokePermiTextStr">To revoke the %1$s permission, go to the app settings.</string>
+    <string name="sendStr">Send</string>
+    <string name="sendImageStr">Send image</string>
+    <string name="wouldYouLikeSendImageStr">Would you like to send this image?</string>
+
 </resources>

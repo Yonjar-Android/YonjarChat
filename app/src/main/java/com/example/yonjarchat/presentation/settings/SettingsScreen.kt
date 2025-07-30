@@ -222,6 +222,7 @@ fun SettingsScreen(
                 modifier = Modifier.size(24.dp)
             )
 
+            // Variables to show the current language
             val locale = LocalConfiguration.current.locales[0]
             val currentLanguage = when (locale.language) {
                 "en" -> "English"
@@ -384,7 +385,7 @@ fun PictureDialog(
                 error = painterResource(R.drawable.user)
             )
 
-            if (NetworkUtils.isInternetAvailable(LocalContext.current)){
+            if (NetworkUtils.isInternetAvailable(LocalContext.current)) {
                 ButtonEdit(
                     buttonText = stringResource(R.string.updatePictureStr),
                     function = {
@@ -453,15 +454,15 @@ fun PermissionsSettingsScreen() {
         Spacer(Modifier.height(16.dp))
 
         PermissionSwitch(
-            title = "Permitir notificaciones",
+            title = stringResource(R.string.allowNotiStr),
             checked = notificationGranted.value,
             onCheckedChange = { isChecked ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     if (isChecked && !notificationGranted.value) {
-                        // Activar: solicitar permiso
+                        // Activate: request permission
                         notificationLauncher.launch(notificationPermission)
                     } else if (!isChecked && notificationGranted.value) {
-                        // Desactivar: ya está concedido, redirigir a ajustes
+                        // Deactivate: already granted, redirect to settings
                         showNotificationPermissionDialog = true
                     }
                 } else {
@@ -473,7 +474,9 @@ fun PermissionsSettingsScreen() {
         Spacer(Modifier.height(12.dp))
 
         PermissionSwitch(
-            title = "Permitir uso de la cámara",
+            title = stringResource(
+                R.string.cameraPermiStr
+            ),
             checked = cameraGranted.value,
             onCheckedChange = { isChecked ->
                 if (isChecked) {
@@ -488,11 +491,21 @@ fun PermissionsSettingsScreen() {
     }
 
     if (showCameraPermissionDialog) {
-        ShowPermissionRevocationDialog(context, "la cámara")
+        ShowPermissionRevocationDialog(
+            context,
+            stringResource(
+                R.string.cameraStr
+            )
+        )
     }
 
     if (showNotificationPermissionDialog) {
-        ShowPermissionRevocationDialog(context, "las notificaciones")
+        ShowPermissionRevocationDialog(
+            context,
+            stringResource(
+                R.string.notificationsStr
+            )
+        )
     }
 
 }
@@ -543,17 +556,34 @@ fun ShowPermissionRevocationDialog(context: Context, permissionName: String) {
                     openAppSettings(context)
                     showDialog = false
                 }) {
-                    Text("Ir a Ajustes")
+                    Text(
+                        stringResource(
+                            R.string.goToSetStr
+                        )
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Cancelar")
+                    Text(
+                        stringResource(
+                            R.string.cancelStr
+                        )
+                    )
                 }
             },
-            title = { Text("Revocar permiso") },
+            title = { Text(
+                stringResource(
+                    R.string.revokePermiStr
+                )
+            ) },
             text = {
-                Text("Para revocar el permiso de $permissionName, ve a los ajustes de la aplicación.")
+                Text(
+                    stringResource(
+                        R.string.revokePermiTextStr,
+                        permissionName
+                    )
+                )
             }
         )
     }

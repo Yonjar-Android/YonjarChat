@@ -223,8 +223,6 @@ fun ChatItem(
         verticalAlignment = Alignment.CenterVertically)
     {
 
-
-        println("Foto de perfil: ${user.imageUrl}")
         AsyncImage(
             model = user.imageUrl,
             contentDescription = "User Image",

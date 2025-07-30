@@ -82,7 +82,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
+                .padding(WindowInsets.systemBars.asPaddingValues()) // Avoid superposition of system bar
                 .padding(horizontal = 8.dp) // Espaciado horizontal opcional
                 .background(MaterialTheme.colorScheme.background),
 
