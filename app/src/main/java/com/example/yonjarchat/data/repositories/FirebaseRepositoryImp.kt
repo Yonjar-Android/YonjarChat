@@ -68,7 +68,7 @@ class FirebaseRepositoryImp @Inject constructor(
             "Usuario creado exitosamente"
         } catch (e: Exception) {
             firebaseAuth.currentUser?.delete()
-            // Verificar si el error es por correo duplicado
+            // Check if the error is due to duplicate mail
             if (e.message?.contains("email") == true) {
                 "Error: Ya existe una cuenta con este correo"
             } else {
@@ -110,7 +110,7 @@ class FirebaseRepositoryImp @Inject constructor(
             firebaseAuth.signOut()
             "Sesión cerrada exitosamente"
         } catch (e: Exception) {
-            // Puedes imprimir el error para debugging
+
             "Error: ${e.message}"
         }
     }
@@ -195,11 +195,11 @@ class FirebaseRepositoryImp @Inject constructor(
         val users = listOf(senderId, receiverId).sorted()
 
         try {
-            // Verificamos si ya existe el documento del chat
+            // We check if the chat document already exists.
             val snapshot = chatRef.get().await()
 
             if (!snapshot.exists()) {
-                // Chat no existe, lo creamos
+                // Chat does not exist, then we create it
                 val newChat = ChatDomain(
                     lastMessage = content,
                     timestamp = System.currentTimeMillis(),
@@ -208,7 +208,7 @@ class FirebaseRepositoryImp @Inject constructor(
                 chatRef.set(newChat).await()
 
             } else {
-                // Chat ya existe, solo actualizamos campos
+                // Chat already exist, we only update fields
                 val message = if (ImageHelper.isImageUrl(content)) "Imagen" else content
 
                 chatRef.update(
@@ -219,7 +219,7 @@ class FirebaseRepositoryImp @Inject constructor(
                 ).await()
             }
 
-            // Agregamos el mensaje a la subcolección
+            // Add the message to the subcollection.
 
             val message = MessageModel(
                 senderId = senderId,
@@ -278,7 +278,7 @@ class FirebaseRepositoryImp @Inject constructor(
                                 content = msg.content,
                                 timestamp = msg.timestamp
                             )
-                        ) // Asegúrate de tener esta conversión
+                        )
                     }
                 }
 
@@ -297,7 +297,6 @@ class FirebaseRepositoryImp @Inject constructor(
         limit: Int,
         onResult: (List<MessageModel>) -> Unit
     ) {
-        println("SE ESTA LLAMANDO")
         val chatId = generateChatId(user1, user2)
 
         val messages = messageDao.getMessagesPaginated(
@@ -323,7 +322,7 @@ class FirebaseRepositoryImp @Inject constructor(
         onResult: (String) -> Unit
     ) {
         try {
-            // Paso 1: Convertir Uri a File temporal
+            // Step 1: Convert Uri to temporary file
             val contentResolver = context.contentResolver
             val inputStream = contentResolver.openInputStream(image)
             val file = File.createTempFile("profile_image", ".jpg", context.cacheDir)
@@ -333,23 +332,23 @@ class FirebaseRepositoryImp @Inject constructor(
                 }
             }
 
-            // Paso 2: Crear Multipart para Retrofit
+            // Step 2: Create Multipart for Retrofit
             val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
             val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
 
-            // Paso 3: Crear los RequestBody para los campos "key" y "name"
+            // Step 3: Create the RequestBody for fields "key" and "name"
             val apiKey = "78e5c23bd951392cb3c03ebb6f428714"
             val apiKeyBody = apiKey.toRequestBody("text/plain".toMediaType())
             val nameBody = "profile_picture".toRequestBody("text/plain".toMediaType())
 
-            // Paso 4: Subir imagen a ImgBB
+            // Step 4: Upload image to ImgBB
             val response = imgbbApi.uploadImage(
                 apiKey = apiKeyBody,
                 image = imagePart,
                 name = nameBody
             )
 
-            // Paso 5: Verificar la respuesta y actualizar Firestore
+            // Step 5: Verify the response and update Firestore
             if (response.isSuccessful && response.body()?.data?.url != null) {
                 val imageUrl = response.body()!!.data.url
                 val deleteUrl = response.body()!!.data.delete_url
@@ -379,7 +378,7 @@ class FirebaseRepositoryImp @Inject constructor(
         onResult: (String) -> Unit
     ) {
         try {
-            // Paso 1: Convertir Uri a File temporal
+            // Step 1: Convert Uri to temporary file
             val contentResolver = context.contentResolver
             val inputStream = contentResolver.openInputStream(image)
             val file = File.createTempFile("profile_image", ".jpg", context.cacheDir)
@@ -389,23 +388,23 @@ class FirebaseRepositoryImp @Inject constructor(
                 }
             }
 
-            // Paso 2: Crear Multipart para Retrofit
+            // Step 2: Create Multipart for Retrofit
             val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
             val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
 
-            // Paso 3: Crear los RequestBody para los campos "key" y "name"
+            // Step 3: Create the RequestBody for fields "key" and "name"
             val apiKey = "78e5c23bd951392cb3c03ebb6f428714"
             val apiKeyBody = apiKey.toRequestBody("text/plain".toMediaType())
             val nameBody = "image_picture".toRequestBody("text/plain".toMediaType())
 
-            // Paso 4: Subir imagen a ImgBB
+            // Step 4: Upload image to ImgBB
             val response = imgbbApi.uploadImage(
                 apiKey = apiKeyBody,
                 image = imagePart,
                 name = nameBody
             )
 
-            // Paso 5: Verificar la respuesta y actualizar Firestore
+            // Step 5: Verify the response and update Firestore
             if (response.isSuccessful && response.body()?.data?.url != null) {
                 val imageUrl = response.body()!!.data.url
 
@@ -436,15 +435,15 @@ class FirebaseRepositoryImp @Inject constructor(
             val userRef = firestore.collection("Users")
             val chatRef = firestore.collection("chats")
 
-            // Mantenemos una lista para almacenar temporalmente los resultados
+            // We keep a map to store the results
             val resultMap = mutableMapOf<String, UserChatModel>()
 
-            // Escuchar cambios en la colección de usuarios
+            // Listen to changes in the user collection
             val userListener = userRef.addSnapshotListener { userSnapshot, userError ->
                 if (userError != null || userSnapshot == null) return@addSnapshotListener
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    // Actualizamos los datos del usuario (nombre e imagen)
+                    // Update data of the user (name and image)
                     for (userDoc in userSnapshot.documents) {
                         val user = userDoc.toObject(UserDomain::class.java)
                         val userId = userDoc.id
@@ -485,14 +484,14 @@ class FirebaseRepositoryImp @Inject constructor(
                 }
             }
 
-            // Escuchar cambios en la colección de chats donde el usuario esté incluido
+            // Listen for changes in the chat collection where the user is included
             val chatListener = chatRef
                 .whereArrayContains("arrayOfUsers", currentUserId)
                 .addSnapshotListener { chatSnapshot, chatError ->
                     if (chatError != null || chatSnapshot == null) return@addSnapshotListener
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        // Actualizamos los datos de los chats
+                        // Update data of the chat
 
                         for (chatDoc in chatSnapshot.documents) {
                             val chat = chatDoc.toObject(ChatDomain::class.java)
@@ -526,10 +525,9 @@ class FirebaseRepositoryImp @Inject constructor(
                     onResult(resultMap.values.toList())
                 }
 
-            // Retornamos un listener combinado (puedes crear una clase para esto)
+            // We return a combined listener
             return CombinedListener(userListener, chatListener)
         } else {
-            println("EN EFECTO ROOM ES LLAMADO")
             val resultMap = mutableMapOf<String, UserChatModel>()
 
             val users = userDao.getAllUsers()

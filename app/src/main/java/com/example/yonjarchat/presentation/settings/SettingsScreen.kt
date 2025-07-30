@@ -488,11 +488,11 @@ fun PermissionsSettingsScreen() {
     }
 
     if (showCameraPermissionDialog) {
-        showPermissionRevocationDialog(context, "la cámara")
+        ShowPermissionRevocationDialog(context, "la cámara")
     }
 
     if (showNotificationPermissionDialog) {
-        showPermissionRevocationDialog(context, "las notificaciones")
+        ShowPermissionRevocationDialog(context, "las notificaciones")
     }
 
 }
@@ -532,7 +532,7 @@ fun openAppSettings(context: Context) {
 }
 
 @Composable
-fun showPermissionRevocationDialog(context: Context, permissionName: String) {
+fun ShowPermissionRevocationDialog(context: Context, permissionName: String) {
     var showDialog by remember { mutableStateOf(true) }
 
     if (showDialog) {

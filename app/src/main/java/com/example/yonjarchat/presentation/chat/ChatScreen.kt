@@ -173,7 +173,7 @@ fun ChatScreen(
 
         val listState = rememberLazyListState()
 
-        // Este efecto se dispara cuando los mensajes cambian
+        // This lambda will be called when the list's size changes
         LaunchedEffect(chatMessages.size) {
             if (chatMessages.isNotEmpty()) {
                 if (chatMessages.size <= 15) {
@@ -187,6 +187,7 @@ fun ChatScreen(
             }
         }
 
+        // This effect will be triggered when the list's first visible item changes
         LaunchedEffect(Unit) {
             snapshotFlow { listState.firstVisibleItemIndex }
                 .distinctUntilChanged()
@@ -246,7 +247,7 @@ fun ChatScreen(
         var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
         var showImageDialog by remember { mutableStateOf(false) }
 
-        // Launcher para cargar imagen
+        // Launcher to open the image picker
         val imagePickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
@@ -255,9 +256,9 @@ fun ChatScreen(
                 selectedImageUri = it
                 showImageDialog = true
 
-                // Procesar imagen seleccionada
+                // Process the selected image URI
                 Log.d("Picker", "Imagen seleccionada: $uri")
-                // Aquí puedes mostrar la imagen o guardarla
+
             }
         }
 
@@ -385,7 +386,6 @@ fun ConfirmImage(
         },
         confirmButton = {
             TextButton(onClick = {
-                // Lógica para enviar la imagen
                 Log.d("EnviarImagen", "URI a enviar: $selectedImageUri")
                 sendPicture.invoke()
             }) {

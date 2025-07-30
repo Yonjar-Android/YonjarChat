@@ -18,10 +18,10 @@ class ForgotPasswordViewModel @Inject constructor(
     val message: StateFlow<String> = _message
     fun forgotPassword(email: String) {
         viewModelScope.launch {
-            // Validar el formato del correo electrónico
+            // Validate format of email
             if (!validateEmail(email)) { return@launch }
 
-            // Enviar el correo de restablecimiento de contraseña
+            // Send email to reset password
             _message.value = firebaseRepository.forgotPassword(email)
         }
     }

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yonjarchat.UserPreferences
-import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
 import com.google.firebase.firestore.ListenerRegistration
