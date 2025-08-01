@@ -20,5 +20,7 @@ interface MessageDao {
 """)
     suspend fun getMessagesPaginated(chatId: String, limit: Int, offset: Int): List<MessageEntity>
 
+    @Query("SELECT * FROM messages")
+    suspend fun getMessages(): List<MessageEntity>
 
 }

@@ -164,7 +164,6 @@ class FirebaseRepositoryImp @Inject constructor(
         }
     }
 
-
     override suspend fun getUserId(id: String): User? {
         return try {
             val documentSnapshot = firestore.collection("Users").document(id).get().await()
@@ -471,26 +470,23 @@ class FirebaseRepositoryImp @Inject constructor(
 
     override suspend fun getChats(
         context: Context,
+        searchQuery: String,
         onResult: (List<UserChatModel>) -> Unit
     ): ListenerRegistration {
-
         val userPreferences = UserPreferences(context)
-
         val currentUserId = userPreferences.userId.first() ?: return DummyListenerRegistration()
+
+        val queryLower = searchQuery.trim().lowercase()
+        val resultMap = mutableMapOf<String, UserChatModel>()
 
         if (NetworkUtils.isInternetAvailable(context)) {
             val userRef = firestore.collection("Users")
             val chatRef = firestore.collection("chats")
 
-            // We keep a map to store the results
-            val resultMap = mutableMapOf<String, UserChatModel>()
-
-            // Listen to changes in the user collection
             val userListener = userRef.addSnapshotListener { userSnapshot, userError ->
                 if (userError != null || userSnapshot == null) return@addSnapshotListener
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    // Update data of the user (name and image)
                     for (userDoc in userSnapshot.documents) {
                         val user = userDoc.toObject(UserDomain::class.java)
                         val userId = userDoc.id
@@ -504,9 +500,11 @@ class FirebaseRepositoryImp @Inject constructor(
                                     imageUrl = user?.imageUrl ?: ""
                                 )
                             )
+                            continue
                         }
 
-                        if (user != null && userId != currentUserId) {
+                        // Aplicar filtro por nombre (si hay búsqueda)
+                        if (user != null && (queryLower.isBlank() || user.username.lowercase().contains(queryLower))) {
                             val existing = resultMap[userId]
                             resultMap[userId] = UserChatModel(
                                 username = user.username,
@@ -516,7 +514,6 @@ class FirebaseRepositoryImp @Inject constructor(
                                 uid = userId
                             )
 
-                            // Insert data in room for use app without internet
                             userDao.insertUser(
                                 UserEntity(
                                     uid = userId,
@@ -531,59 +528,50 @@ class FirebaseRepositoryImp @Inject constructor(
                 }
             }
 
-            // Listen for changes in the chat collection where the user is included
             val chatListener = chatRef
                 .whereArrayContains("arrayOfUsers", currentUserId)
                 .addSnapshotListener { chatSnapshot, chatError ->
                     if (chatError != null || chatSnapshot == null) return@addSnapshotListener
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        // Update data of the chat
-
+                        // Dentro de chatListener
                         for (chatDoc in chatSnapshot.documents) {
-                            val chat = chatDoc.toObject(ChatDomain::class.java)
+                            val chat = chatDoc.toObject(ChatDomain::class.java) ?: continue
+                            val otherUserId = chat.arrayOfUsers.firstOrNull { it != currentUserId } ?: continue
 
-                            val otherUserId =
-                                chat?.arrayOfUsers?.firstOrNull { it != currentUserId } ?: continue
+                            // Asegúrate de que el usuario está en resultMap (es decir, que pasó el filtro)
+                            val existing = resultMap[otherUserId] ?: continue
 
-                            val existing = resultMap[otherUserId]
-                            if (chat != null) {
-                                resultMap[otherUserId] = UserChatModel(
-                                    username = existing?.username ?: "",
-                                    imageUrl = existing?.imageUrl ?: "",
+                            resultMap[otherUserId] = existing.copy(
+                                lastMessage = chat.lastMessage,
+                                timestamp = chat.timestamp
+                            )
+
+                            chatDao.insertChat(
+                                ChatEntity(
+                                    chatId = chatDoc.id,
+                                    user1Id = currentUserId,
+                                    user2Id = otherUserId,
                                     lastMessage = chat.lastMessage,
-                                    timestamp = chat.timestamp,
-                                    uid = otherUserId
+                                    timestamp = chat.timestamp
                                 )
-
-                                // Insert data in room for use app without internet
-                                chatDao.insertChat(
-                                    ChatEntity(
-                                        chatId = chatDoc.id,
-                                        user1Id = currentUserId,
-                                        user2Id = otherUserId,
-                                        lastMessage = chat.lastMessage,
-                                        timestamp = chat.timestamp
-                                    )
-                                )
-                            }
+                            )
                         }
+
+                        onResult(resultMap.values.toList())
                     }
-                    onResult(resultMap.values.toList())
                 }
 
-            // We return a combined listener
             return CombinedListener(userListener, chatListener)
         } else {
-            val resultMap = mutableMapOf<String, UserChatModel>()
-
             val users = userDao.getAllUsers()
+            val filteredUsers = users.filter { user ->
+                user.uid != currentUserId &&
+                        (queryLower.isBlank() || user.username.lowercase().contains(queryLower))
+            }
 
-            for (user in users) {
-                if (user.uid == currentUserId) continue
-
+            for (user in filteredUsers) {
                 val existing = resultMap[user.uid]
-
                 resultMap[user.uid] = UserChatModel(
                     username = user.username,
                     imageUrl = user.imageUrl ?: "",
@@ -592,39 +580,27 @@ class FirebaseRepositoryImp @Inject constructor(
                     uid = user.uid
                 )
             }
-            onResult(resultMap.values.toList())
+
             val chats = chatDao.getAllChats()
 
             for (chat in chats) {
-                if (userPreferences.userId.first() == chat.user1Id) {
-                    val existing = resultMap[chat.user2Id]
+                val isUser1 = userPreferences.userId.first() == chat.user1Id
+                val otherId = if (isUser1) chat.user2Id else chat.user1Id
+                val existing = resultMap[otherId] ?: continue
 
-                    resultMap[chat.user2Id] = UserChatModel(
-                        username = existing?.username ?: "",
-                        imageUrl = existing?.imageUrl ?: "",
-                        lastMessage = chat.lastMessage,
-                        timestamp = chat.timestamp,
-                        uid = chat.user2Id
-                    )
-                } else {
-                    val existing = resultMap[chat.user1Id]
-
-                    resultMap[chat.user1Id] = UserChatModel(
-                        username = existing?.username ?: "",
-                        imageUrl = existing?.imageUrl ?: "",
-                        lastMessage = chat.lastMessage,
-                        timestamp = chat.timestamp,
-                        uid = chat.user2Id
-                    )
-                }
-
+                resultMap[otherId] = UserChatModel(
+                    username = existing.username,
+                    imageUrl = existing.imageUrl,
+                    lastMessage = chat.lastMessage,
+                    timestamp = chat.timestamp,
+                    uid = otherId
+                )
             }
-            onResult(resultMap.values.toList())
 
+            onResult(resultMap.values.toList())
             return DummyListenerRegistration()
         }
     }
-
 
     fun generateChatId(user1: String, user2: String): String {
         return listOf(user1, user2).sorted().joinToString("_")

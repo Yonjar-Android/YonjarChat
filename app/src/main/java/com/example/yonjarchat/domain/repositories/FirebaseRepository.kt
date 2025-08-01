@@ -23,6 +23,8 @@ interface FirebaseRepository {
 
     suspend fun getUserId(id: String): User?
 
+    suspend fun getUserByUsername(username: String, onResult: (String) -> Unit): User?
+
     suspend fun updateUsername(id: String, username: String, onResult: (String) -> Unit)
 
     suspend fun sendMessage(senderId: String, receiverId: String, content: String)
@@ -56,7 +58,11 @@ interface FirebaseRepository {
         onResult: (String) -> Unit
     )
 
-    suspend fun getChats(context: Context,onResult: (List<UserChatModel>) -> Unit): ListenerRegistration
+    suspend fun getChats(
+        context: Context,
+        searchQuery: String = "",
+        onResult: (List<UserChatModel>) -> Unit
+    ): ListenerRegistration
 
 
 }

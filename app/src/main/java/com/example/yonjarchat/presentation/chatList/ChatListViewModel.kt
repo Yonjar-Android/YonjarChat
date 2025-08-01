@@ -30,9 +30,9 @@ class ChatListViewModel @Inject constructor(
 
     private var listenerRegistration: ListenerRegistration? = null
 
-    fun getChats(context: Context) {
+    fun getChats(context: Context, searchQuery: String = "") {
         viewModelScope.launch {
-            listenerRegistration = firebaseRepository.getChats(context) { chatList ->
+            listenerRegistration = firebaseRepository.getChats(context, searchQuery) { chatList ->
                 _chats.value = chatList
             }
         }

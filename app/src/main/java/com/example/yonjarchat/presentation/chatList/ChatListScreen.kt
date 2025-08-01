@@ -163,6 +163,7 @@ fun ChatListScreen(
                     IconButton(
                         onClick = {
                             //Clean search
+                            viewModel.getChats(context = context, searchQuery = username)
                             username = ""
                         }
                     ) {
