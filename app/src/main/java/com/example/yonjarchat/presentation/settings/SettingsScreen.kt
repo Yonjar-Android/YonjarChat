@@ -2,13 +2,18 @@
 
 package com.example.yonjarchat.presentation.settings
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,13 +62,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.sharedComponents.ButtonEdit
+import com.example.yonjarchat.sharedComponents.ChargeScreen
+import com.example.yonjarchat.utils.NetworkUtils
 
 @Composable
 fun SettingsScreen(
@@ -106,165 +113,181 @@ fun SettingsScreen(
             .padding(WindowInsets.systemBars.asPaddingValues()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = {
-                    navHostController.navigateUp()
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+        if (user == null) {
+            ChargeScreen()
+        } else {
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            Text(
-                text = stringResource(R.string.settingsStr),
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-        }
-        AsyncImage(
-            model = user?.imageUrl,
-            contentDescription = "Settings",
-            modifier = Modifier
-                .padding(16.dp)
-                .size(150.dp)
-                .clip(CircleShape)
-                .clickable {
-                    showPicture = true
-                },
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(R.drawable.user),
-            error = painterResource(R.drawable.user)
-        )
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                user?.username ?: "",
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            IconButton(
-                onClick = {
-                    showEditUsernameDialog = true
-                },
-                modifier = Modifier.background(
-                    if (darkTheme) Color.Gray else Color.LightGray, CircleShape
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                )
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.darkThemeStr),
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Switch(
-                checked = darkTheme,
-                onCheckedChange =
-                    {
-                        viewModel.setDarkTheme(it)
-                    }
-            )
-        }
-
-        Spacer(
-            modifier = Modifier.size(24.dp)
-        )
-
-        val locale = LocalConfiguration.current.locales[0]
-        val currentLanguage = when (locale.language) {
-            "en" -> "English"
-            "es" -> "Español"
-            else -> locale.displayLanguage // por si acaso
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.languageStr),
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(currentLanguage, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
-        }
-
-    }
-
-    if (showEditUsernameDialog) {
-        EditUsernameDialog(
-            currentName = user?.username ?: "",
-            onDismiss = { showEditUsernameDialog = false },
-            onSave = { newName ->
-                if (myUserId != null && newName.isNotEmpty()) {
-                    viewModel.setUsername(myUserId ?: "", newName)
-                    showEditUsernameDialog = false
-                } else {
-                    Toast.makeText(context, "Invalid username", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-    }
-
-    if (showPicture) {
-        PictureDialog(
-            imageUrl = user?.imageUrl,
-            onDismiss = { showPicture = false },
-            setImage = { imageUri ->
-                selectedImageUri = imageUri
-                if (myUserId != null && selectedImageUri != null) {
-                    viewModel.setPicture(
-                        myUserId ?: "",
-                        selectedImageUri!!,
-                        context,
-                        user?.imageUrl ?: ""
+                IconButton(
+                    onClick = {
+                        navHostController.navigateUp()
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
-                    showPicture = false
+                }
+
+                Text(
+                    text = stringResource(R.string.settingsStr),
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+            }
+            AsyncImage(
+                model = user?.imageUrl,
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(150.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        showPicture = true
+                    },
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.user),
+                error = painterResource(R.drawable.user)
+            )
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    user?.username ?: "",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                IconButton(
+                    onClick = {
+                        showEditUsernameDialog = true
+                    },
+                    modifier = Modifier.background(
+                        if (darkTheme) Color.Gray else Color.LightGray, CircleShape
+                    ),
+                    enabled = NetworkUtils.isInternetAvailable(context)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
                 }
             }
-        )
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.darkThemeStr),
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Switch(
+                    checked = darkTheme,
+                    onCheckedChange =
+                        {
+                            viewModel.setDarkTheme(it)
+                        }
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.size(24.dp)
+            )
+
+            // Variables to show the current language
+            val locale = LocalConfiguration.current.locales[0]
+            val currentLanguage = when (locale.language) {
+                "en" -> "English"
+                "es" -> "Español"
+                else -> locale.displayLanguage // por si acaso
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.languageStr),
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    currentLanguage,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Spacer(modifier = Modifier.size(24.dp))
+
+            PermissionsSettingsScreen()
+
+        }
+
+        if (showEditUsernameDialog) {
+            EditUsernameDialog(
+                currentName = user?.username ?: "",
+                onDismiss = { showEditUsernameDialog = false },
+                onSave = { newName ->
+                    if (myUserId != null && newName.isNotEmpty()) {
+                        viewModel.setUsername(myUserId ?: "", newName)
+                        showEditUsernameDialog = false
+                    } else {
+                        Toast.makeText(context, "Invalid username", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
+
+        if (showPicture) {
+            PictureDialog(
+                imageUrl = user?.imageUrl,
+                onDismiss = { showPicture = false },
+                setImage = { imageUri ->
+                    selectedImageUri = imageUri
+                    if (myUserId != null && selectedImageUri != null) {
+                        viewModel.setPicture(
+                            myUserId ?: "",
+                            selectedImageUri!!,
+                            context,
+                            user?.imageUrl ?: ""
+                        )
+                        showPicture = false
+                    }
+                }
+            )
+        }
     }
 
     BackHandler {
@@ -362,13 +385,208 @@ fun PictureDialog(
                 error = painterResource(R.drawable.user)
             )
 
-            ButtonEdit(
-                buttonText = stringResource(R.string.updatePictureStr),
-                function = {
-                    imagePickerLauncher.launch("image/*")
-                }
-            )
+            if (NetworkUtils.isInternetAvailable(LocalContext.current)) {
+                ButtonEdit(
+                    buttonText = stringResource(R.string.updatePictureStr),
+                    function = {
+                        imagePickerLauncher.launch("image/*")
+                    }
+                )
+            }
 
         }
     }
 }
+
+@Composable
+fun PermissionsSettingsScreen() {
+    val context = LocalContext.current
+
+    val notificationPermission = Manifest.permission.POST_NOTIFICATIONS
+    val cameraPermission = Manifest.permission.CAMERA
+
+    val notificationGranted = remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ContextCompat.checkSelfPermission(
+                    context,
+                    notificationPermission
+                ) == PackageManager.PERMISSION_GRANTED
+            else true // versiones anteriores no lo requieren
+        )
+    }
+
+    val cameraGranted = remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                cameraPermission
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationGranted.value = granted
+    }
+
+    var showNotificationPermissionDialog by remember { mutableStateOf(false) }
+
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        cameraGranted.value = granted
+    }
+
+    var showCameraPermissionDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Permisos", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.height(16.dp))
+
+        PermissionSwitch(
+            title = stringResource(R.string.allowNotiStr),
+            checked = notificationGranted.value,
+            onCheckedChange = { isChecked ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (isChecked && !notificationGranted.value) {
+                        // Activate: request permission
+                        notificationLauncher.launch(notificationPermission)
+                    } else if (!isChecked && notificationGranted.value) {
+                        // Deactivate: already granted, redirect to settings
+                        showNotificationPermissionDialog = true
+                    }
+                } else {
+                    showNotificationPermissionDialog = true
+                }
+            }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        PermissionSwitch(
+            title = stringResource(
+                R.string.cameraPermiStr
+            ),
+            checked = cameraGranted.value,
+            onCheckedChange = { isChecked ->
+                if (isChecked) {
+                    if (!cameraGranted.value) {
+                        cameraLauncher.launch(cameraPermission)
+                    }
+                } else {
+                    showCameraPermissionDialog = true
+                }
+            }
+        )
+    }
+
+    if (showCameraPermissionDialog) {
+        ShowPermissionRevocationDialog(
+            context,
+            stringResource(
+                R.string.cameraStr
+            )
+        )
+    }
+
+    if (showNotificationPermissionDialog) {
+        ShowPermissionRevocationDialog(
+            context,
+            stringResource(
+                R.string.notificationsStr
+            )
+        )
+    }
+
+}
+
+@Composable
+fun PermissionSwitch(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = { onCheckedChange(it) }
+        )
+    }
+}
+
+fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    )
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}
+
+@Composable
+fun ShowPermissionRevocationDialog(context: Context, permissionName: String) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    openAppSettings(context)
+                    showDialog = false
+                }) {
+                    Text(
+                        stringResource(
+                            R.string.goToSetStr
+                        )
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(
+                        stringResource(
+                            R.string.cancelStr
+                        )
+                    )
+                }
+            },
+            title = { Text(
+                stringResource(
+                    R.string.revokePermiStr
+                )
+            ) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.revokePermiTextStr,
+                        permissionName
+                    )
+                )
+            }
+        )
+    }
+}
+
+

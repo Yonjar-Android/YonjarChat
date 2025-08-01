@@ -23,6 +23,8 @@ interface FirebaseRepository {
 
     suspend fun getUserId(id: String): User?
 
+    suspend fun getUserByUsername(username: String, onResult: (String) -> Unit): User?
+
     suspend fun updateUsername(id: String, username: String, onResult: (String) -> Unit)
 
     suspend fun sendMessage(senderId: String, receiverId: String, content: String)
@@ -30,8 +32,17 @@ interface FirebaseRepository {
     suspend fun getMessages(
         user1: String, user2: String,
         lastVisible: DocumentSnapshot?,
+        context: Context,
         onResult: (List<MessageModel>, DocumentSnapshot?) -> Unit
     ): ListenerRegistration
+
+    suspend fun getMessagesFromRoom(
+        user1: String,
+        user2: String,
+        offset: Int,
+        limit: Int,
+        onResult: (List<MessageModel>) -> Unit
+    )
 
     suspend fun updatePicture(
         id: String, image: Uri,
@@ -47,7 +58,11 @@ interface FirebaseRepository {
         onResult: (String) -> Unit
     )
 
-    suspend fun getChats(context: Context,onResult: (List<UserChatModel>) -> Unit): ListenerRegistration
+    suspend fun getChats(
+        context: Context,
+        searchQuery: String = "",
+        onResult: (List<UserChatModel>) -> Unit
+    ): ListenerRegistration
 
 
 }

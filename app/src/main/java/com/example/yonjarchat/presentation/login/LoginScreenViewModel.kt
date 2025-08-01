@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -26,16 +25,14 @@ class LoginScreenViewModel @Inject constructor(
     val message: StateFlow<String> = _message
 
     fun loginUser(email: String, password: String, context: Context) {
-
         if (validations(email, password)){
             firebaseRepository.loginUser(email, password){
-                _message.value = it
                 if (it == resourceProvider.getString(R.string.youLoggedInStr)){
-                    if (firebaseAuth.currentUser != null){
+                    if (firebaseAuth.currentUser?.uid != null){
                         viewModelScope.launch {
                             val userPreferences = UserPreferences(context)
                             userPreferences.saveUserId(firebaseAuth.currentUser!!.uid)
-                            println("User id viewModel ${userPreferences.userId.first()}")
+                            _message.value = it
                         }
                     }
                 }

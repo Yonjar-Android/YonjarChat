@@ -8,6 +8,7 @@ import com.example.yonjarchat.UserPreferences
 import com.example.yonjarchat.domain.models.MessageModel
 import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.example.yonjarchat.utils.NetworkUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
@@ -37,6 +38,9 @@ class ChatScreenViewModel @Inject constructor(
     private var isLoadingMore = false
     var listener: ListenerRegistration? = null
 
+    private var currentOffset = 0
+    private val pageSize = 15
+
     fun getUser(id: String) {
         viewModelScope.launch {
             _user.value = firebaseRepository.getUserId(id)
@@ -53,20 +57,39 @@ class ChatScreenViewModel @Inject constructor(
             if (isLoadingMore) return@launch
             isLoadingMore = true
 
-            listener = firebaseRepository.getMessages(
-                user1 = userId,
-                user2 = userPreferences.userId.first() ?: "",
-                lastVisible = lastVisible,
-                onResult = { messages, lastDoc ->
-                    lastVisible = lastDoc
+            if (NetworkUtils.isInternetAvailable(context)) {
+                listener = firebaseRepository.getMessages(
+                    user1 = userId,
+                    user2 = userPreferences.userId.first() ?: "",
+                    lastVisible = lastVisible,
+                    context = context,
+                    onResult = { messages, lastDoc ->
+                        lastVisible = lastDoc
 
-                    _chatMessages.update { old ->
-                        (old + messages).distinctBy { it.timestamp }
-                            .sortedBy { it.timestamp }
+                        _chatMessages.update { old ->
+                            (old + messages).distinctBy { it.timestamp }
+                                .sortedBy { it.timestamp }
+                        }
+                        isLoadingMore = false
                     }
-                    isLoadingMore = false
-                }
-            )
+                )
+            } else {
+                firebaseRepository.getMessagesFromRoom(
+                    user1 = userId,
+                    user2 = userPreferences.userId.first() ?: "",
+                    offset = currentOffset,
+                    limit = pageSize,
+                    onResult = { messages ->
+                        currentOffset += messages.size
+
+                        _chatMessages.update { old ->
+                            (old + messages).distinctBy { it.timestamp }
+                                .sortedBy { it.timestamp }
+                        }
+                        isLoadingMore = false
+                    })
+            }
+
         }
     }
 
@@ -92,7 +115,7 @@ class ChatScreenViewModel @Inject constructor(
     fun sendImage(
         imageUri: Uri,
         context: Context,
-        ){
+    ) {
         viewModelScope.launch {
             firebaseRepository.sendPicture(
                 senderId = firebaseAuth.currentUser?.uid ?: "",
@@ -100,7 +123,7 @@ class ChatScreenViewModel @Inject constructor(
                 image = imageUri,
                 context = context,
                 onResult = {
-                   _message.value = it
+                    _message.value = it
                 }
             )
         }

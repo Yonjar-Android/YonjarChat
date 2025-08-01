@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -166,17 +166,27 @@ fun ChatScreen(
             }
         }
 
+        var animateScroll by remember { mutableIntStateOf(0) }
+
         HorizontalDivider()
 
         val listState = rememberLazyListState()
 
-        // Este efecto se dispara cuando los mensajes cambian
+        // This lambda will be called when the list's size changes
         LaunchedEffect(chatMessages.size) {
             if (chatMessages.isNotEmpty()) {
-                listState.animateScrollToItem(chatMessages.size / 2)
+                if (chatMessages.size <= 15) {
+                    listState.animateScrollToItem(chatMessages.lastIndex)
+                } else if (chatMessages.size - animateScroll == 1) {
+                    listState.animateScrollToItem(chatMessages.lastIndex)
+                } else {
+                    listState.animateScrollToItem(4)
+                }
+                animateScroll = chatMessages.size
             }
         }
 
+        // This effect will be triggered when the list's first visible item changes
         LaunchedEffect(Unit) {
             snapshotFlow { listState.firstVisibleItemIndex }
                 .distinctUntilChanged()
@@ -236,7 +246,7 @@ fun ChatScreen(
         var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
         var showImageDialog by remember { mutableStateOf(false) }
 
-        // Launcher para cargar imagen
+        // Launcher to open the image picker
         val imagePickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
@@ -245,9 +255,9 @@ fun ChatScreen(
                 selectedImageUri = it
                 showImageDialog = true
 
-                // Procesar imagen seleccionada
+                // Process the selected image URI
                 Log.d("Picker", "Imagen seleccionada: $uri")
-                // Aquí puedes mostrar la imagen o guardarla
+
             }
         }
 
@@ -358,7 +368,8 @@ fun ConfirmImage(
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss.invoke() },
-        title = { Text("Enviar imagen") },
+        title = { Text(
+            stringResource(R.string.sendImageStr)) },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
@@ -370,23 +381,28 @@ fun ConfirmImage(
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("¿Deseas enviar esta imagen?")
+                Text(
+                    stringResource(R.string.wouldYouLikeSendImageStr),
+                )
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                // Lógica para enviar la imagen
                 Log.d("EnviarImagen", "URI a enviar: $selectedImageUri")
                 sendPicture.invoke()
             }) {
-                Text("Enviar")
+                Text(
+                    stringResource(R.string.sendStr)
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onDismiss.invoke()
             }) {
-                Text("Cancelar")
+                Text(
+                    stringResource(R.string.cancelStr),
+                )
             }
         }
     )

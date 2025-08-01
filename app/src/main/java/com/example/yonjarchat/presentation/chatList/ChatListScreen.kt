@@ -4,6 +4,7 @@ package com.example.yonjarchat.presentation.chatList
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +62,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.yonjarchat.R
 import com.example.yonjarchat.domain.models.UserChatModel
+import com.example.yonjarchat.sharedComponents.ChargeScreen
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -76,10 +78,12 @@ fun ChatListScreen(
 
     val context = LocalContext.current
 
+    val activity = LocalActivity.current
+
     var showDialog by remember { mutableStateOf(false) }
 
     if (message.isNotEmpty()) {
-        if (message == "Sesión cerrada exitosamente") {
+        if (message == stringResource(R.string.loggedOutSuccessStr)) {
             navHostController.navigate("loginScreen") {
                 popUpTo("chatListScreen") {
                     inclusive = true
@@ -103,101 +107,108 @@ fun ChatListScreen(
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = {
-                    showDialog = true
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+        if (chats.isEmpty()) {
+            ChargeScreen()
+        } else {
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-            Text(
-                text = "Chats",
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            IconButton(
-                onClick = {
-                    navHostController.navigate("settingsScreen")
-                },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextFieldEdit(
-            textTitle = stringResource(R.string.searchStr),
-            value = username,
-            onValueChange = {
-                username = it
-            },
-            icon = {
                 IconButton(
                     onClick = {
-                        //Clean search
-                        username = ""
-                    }
+                        showDialog = true
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
-            }
-        )
+                Text(
+                    text = "Chats",
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            items(chats) {
-                ChatItem(
-                    user = it,
-                    navigateToChat = {
-                        navHostController.navigate("chatScreen/${it.uid}")
-                    })
+                IconButton(
+                    onClick = {
+                        navHostController.navigate("settingsScreen")
+                    },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextFieldEdit(
+                textTitle = stringResource(R.string.searchStr),
+                value = username,
+                onValueChange = {
+                    username = it
+                },
+                icon = {
+                    IconButton(
+                        onClick = {
+                            //Clean search
+                            viewModel.getChats(context = context, searchQuery = username)
+                            username = ""
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                items(chats) {
+                    ChatItem(
+                        user = it,
+                        navigateToChat = {
+                            navHostController.navigate("chatScreen/${it.uid}")
+                        })
+                }
+            }
+        }
+
+        if (showDialog) {
+            DialogSignOut(
+                onDismissRequest = {
+                    showDialog = false
+                },
+                onConfirm = {
+                    viewModel.signOut(context)
+                    showDialog = false
+                }
+            )
         }
     }
 
-    if (showDialog) {
-        DialogSignOut(
-            onDismissRequest = {
-                showDialog = false
-            },
-            onConfirm = {
-                viewModel.signOut(context)
-                showDialog = false
-            }
-        )
-    }
-
     BackHandler {
-        showDialog = true
+        activity?.finish()
     }
 }
 
@@ -216,8 +227,6 @@ fun ChatItem(
         verticalAlignment = Alignment.CenterVertically)
     {
 
-
-        println("Foto de perfil: ${user.imageUrl}")
         AsyncImage(
             model = user.imageUrl,
             contentDescription = "User Image",
@@ -237,7 +246,7 @@ fun ChatItem(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = if (user.lastMessage.isEmpty()) "Last Message" else user.lastMessage,
+                text = user.lastMessage.ifEmpty { "Last Message" },
                 fontSize = 16.sp,
                 color = Color(0XFF4A709C),
                 maxLines = 1,

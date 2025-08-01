@@ -3,10 +3,11 @@ package com.example.yonjarchat.presentation.chatList
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yonjarchat.R
 import com.example.yonjarchat.UserPreferences
-import com.example.yonjarchat.domain.models.User
 import com.example.yonjarchat.domain.models.UserChatModel
 import com.example.yonjarchat.domain.repositories.FirebaseRepository
+import com.example.yonjarchat.utils.ResourceProvider
 import com.google.firebase.firestore.ListenerRegistration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ChatListViewModel @Inject constructor(
-    private val firebaseRepository: FirebaseRepository
+    private val firebaseRepository: FirebaseRepository,
+    private val resourceProvider: ResourceProvider
 
 ): ViewModel() {
 
@@ -28,9 +30,9 @@ class ChatListViewModel @Inject constructor(
 
     private var listenerRegistration: ListenerRegistration? = null
 
-    fun getChats(context: Context) {
+    fun getChats(context: Context, searchQuery: String = "") {
         viewModelScope.launch {
-            listenerRegistration = firebaseRepository.getChats(context) { chatList ->
+            listenerRegistration = firebaseRepository.getChats(context, searchQuery) { chatList ->
                 _chats.value = chatList
             }
         }
@@ -41,7 +43,7 @@ class ChatListViewModel @Inject constructor(
             val response = firebaseRepository.signOut()
             _message.value = response
 
-            if (response == "Sesión cerrada exitosamente"){
+            if (response == resourceProvider.getString(R.string.loggedOutSuccessStr)){
                 val userPreferences = UserPreferences(context)
                 userPreferences.clearUserId()
             }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -35,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yonjarchat.R
 import com.example.yonjarchat.sharedComponents.ButtonEdit
+import com.example.yonjarchat.sharedComponents.ChargeScreen
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
 
 @Composable
@@ -45,60 +45,68 @@ fun ForgotPasswordScreen(
     // variables
     var email by remember { mutableStateOf("") }
 
+    var loading by remember { mutableStateOf(false) }
+
     val message by viewModel.message.collectAsStateWithLifecycle()
 
     if (message.isNotEmpty()) {
         Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
         viewModel.clearMessage()
+        loading = false
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
-            .padding(horizontal = 8.dp), // Espaciado horizontal opcional
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
+    if (loading) {
+        ChargeScreen()
+    } else {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .padding(WindowInsets.systemBars.asPaddingValues()) // Evita superposición con la barra de estado
+                .padding(horizontal = 8.dp), // Espaciado horizontal opcional
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(
-                onClick = {
-                    navHostController.navigateUp()
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
+                IconButton(
+                    onClick = {
+                        navHostController.navigateUp()
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                Text(
+                    text = stringResource(id = R.string.forgotPwdStr),
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            Text(
-                text = stringResource(id = R.string.forgotPwdStr),
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+            Spacer(modifier = Modifier.height(32.dp))
+
+            TextFieldEdit(stringResource(id = R.string.emailStr), email, onValueChange = {
+                email = it
+            })
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            ButtonEdit(
+                buttonText = stringResource(id = R.string.sendLinkPwdStr),
+                function = {
+                    viewModel.forgotPassword(email)
+                    loading = true
+                }
             )
+
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        TextFieldEdit(stringResource(id = R.string.emailStr), email, onValueChange = {
-            email = it
-        })
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        ButtonEdit(
-            buttonText = stringResource(id = R.string.sendLinkPwdStr),
-            function = {
-                viewModel.forgotPassword(email)
-            }
-        )
-
     }
 }
