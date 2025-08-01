@@ -4,6 +4,7 @@ package com.example.yonjarchat.presentation.chatList
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,10 +78,12 @@ fun ChatListScreen(
 
     val context = LocalContext.current
 
+    val activity = LocalActivity.current
+
     var showDialog by remember { mutableStateOf(false) }
 
     if (message.isNotEmpty()) {
-        if (message == "Sesión cerrada exitosamente") {
+        if (message == stringResource(R.string.loggedOutSuccessStr)) {
             navHostController.navigate("loginScreen") {
                 popUpTo("chatListScreen") {
                     inclusive = true
@@ -204,7 +207,7 @@ fun ChatListScreen(
     }
 
     BackHandler {
-        showDialog = true
+        activity?.finish()
     }
 }
 

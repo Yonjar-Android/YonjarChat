@@ -36,5 +36,20 @@
     <string name="sendStr">Enviar</string>
     <string name="sendImageStr">Enviar imagen</string>
     <string name="wouldYouLikeSendImageStr">¿Deseas enviar esta imagen?</string>
+    <string name="noInternetStr">No hay conexión a internet</string>
+    <string name="loggedOutSuccessStr">Sesión cerrada exitosamente</string>
+    <string name="userCreatedSuccessStr">Usuario creado exitosamente</string>
+    <string name="errorEmailAlreadyExistStr">Error: Ya existe una cuenta con este correo</string>
+    <string name="errorLogginInStr">Error al iniciar sesión</string>
+    <string name="errorCreatingUserStr">Error al crear el usuario: </string>
+    <string name="imageUploadSuccessStr">Imagen enviada exitosamente</string>
+    <string name="imageUpdateSuccessStr">Imagen actualizada exitosamente</string>
+    <string name="imageUploadErrorResponseStr">Error al subir la imagen:</string>
+    <string name="imageUploadErrorExceptionStr">Error al enviar la imagen:</string>
+    <string name="imageUpdateErrorResponseStr">Error al actualizar la imagen:</string>
+    <string name="usernameUpdatedsuccessfullyStr">Nombre de usuario actualizado exitosamente</string>
+    <string name="errorUpdatingUsernameStr">Error al actualizar el nombre de usuario:</string>
+    <string name="errorSendingMessageStr">Error al enviar mensaje:</string>
+    <string name="passwordResetEmailSentStr">Se le ha enviado un correo para restablecer su contraseña</string>
 
 </resources>

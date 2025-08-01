@@ -56,7 +56,9 @@ fun RegisterScreen(
 
     var loading by remember { mutableStateOf(false) }
 
-    if (message == "Usuario creado exitosamente") {
+    if (message == stringResource(
+        R.string.userCreatedSuccessStr
+    )) {
         loading = false
         navHostController.navigate("loginScreen")
         viewModel.clearMessage()

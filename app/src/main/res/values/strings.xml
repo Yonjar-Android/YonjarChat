@@ -35,5 +35,19 @@
     <string name="sendStr">Send</string>
     <string name="sendImageStr">Send image</string>
     <string name="wouldYouLikeSendImageStr">Would you like to send this image?</string>
-
+    <string name="noInternetStr">No internet connection</string>
+    <string name="loggedOutSuccessStr">Logged out successfully</string>
+    <string name="userCreatedSuccessStr">User created successfully</string>
+    <string name="errorEmailAlreadyExistStr">Error: An account with this email already exists</string>
+    <string name="errorLogginInStr">Error logging in</string>
+    <string name="errorCreatingUserStr">Error creating user:</string>
+    <string name="imageUploadSuccessStr">Image sent successfully</string>
+    <string name="imageUpdateSuccessStr">Image updated successfully</string>
+    <string name="imageUploadErrorResponseStr">Error uploading image:</string>
+    <string name="imageUploadErrorExceptionStr">Error sending image:</string>
+    <string name="imageUpdateErrorResponseStr">Error updating image:</string>
+    <string name="usernameUpdatedsuccessfullyStr">Username updated successfully</string>
+    <string name="errorUpdatingUsernameStr">Error updating username:</string>
+    <string name="errorSendingMessageStr">Error sending message:</string>
+    <string name="passwordResetEmailSentStr">An email has been sent to reset your password</string>
 </resources>

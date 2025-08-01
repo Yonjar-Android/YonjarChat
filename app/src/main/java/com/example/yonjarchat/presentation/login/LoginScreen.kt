@@ -44,6 +44,7 @@ import com.example.yonjarchat.sharedComponents.ButtonEdit
 import com.example.yonjarchat.sharedComponents.ChargeScreen
 import com.example.yonjarchat.sharedComponents.TextButtonEdit
 import com.example.yonjarchat.sharedComponents.TextFieldEdit
+import com.example.yonjarchat.utils.NetworkUtils
 
 @Composable
 fun LoginScreen(
@@ -140,6 +141,10 @@ fun LoginScreen(
             ButtonEdit(
                 buttonText = stringResource(id = R.string.signInStr),
                 function = {
+                    if (!NetworkUtils.isInternetAvailable(context)) {
+                        Toast.makeText(context, R.string.noInternetStr, Toast.LENGTH_SHORT).show()
+                        return@ButtonEdit
+                    }
                     viewModel.loginUser(email, password, context)
                     loading = true
                 }

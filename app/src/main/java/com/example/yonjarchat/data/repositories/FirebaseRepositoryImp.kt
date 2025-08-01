@@ -65,14 +65,20 @@ class FirebaseRepositoryImp @Inject constructor(
             )
             firestore.collection("Users").document(uid).set(user).await()
 
-            "Usuario creado exitosamente"
+            resourceProvider.getString(
+                R.string.userCreatedSuccessStr
+            )
         } catch (e: Exception) {
             firebaseAuth.currentUser?.delete()
             // Check if the error is due to duplicate mail
             if (e.message?.contains("email") == true) {
-                "Error: Ya existe una cuenta con este correo"
+                resourceProvider.getString(R.string.errorEmailAlreadyExistStr)
             } else {
-                "Error al crear el usuario: ${e.message}"
+                "${
+                    resourceProvider.getString(
+                        R.string.errorCreatingUserStr
+                    )
+                }${e.message}"
             }
         }
     }
@@ -88,7 +94,11 @@ class FirebaseRepositoryImp @Inject constructor(
                         )
                     )
                 } else {
-                    onResult.invoke("Error al iniciar sesión")
+                    onResult.invoke(
+                        resourceProvider.getString(
+                            R.string.errorLogginInStr
+                        )
+                    )
 
                 }
             }
@@ -97,7 +107,7 @@ class FirebaseRepositoryImp @Inject constructor(
     override suspend fun forgotPassword(email: String): String {
         return try {
             firebaseAuth.sendPasswordResetEmail(email).await()
-            "Se le ha enviado un correo para restablecer su contraseña"
+            resourceProvider.getString(R.string.passwordResetEmailSentStr)
 
         } catch (e: Exception) {
             "Error: ${e.message}"
@@ -108,7 +118,7 @@ class FirebaseRepositoryImp @Inject constructor(
     override fun signOut(): String {
         return try {
             firebaseAuth.signOut()
-            "Sesión cerrada exitosamente"
+            resourceProvider.getString(R.string.loggedOutSuccessStr)
         } catch (e: Exception) {
 
             "Error: ${e.message}"
@@ -165,7 +175,30 @@ class FirebaseRepositoryImp @Inject constructor(
                 throw Exception("No se encontró el usuario con ID $id")
             }
         } catch (e: Exception) {
-            println("Error al obtener el usuario con ID $id: ${e.message}")
+            println("Error ${e.message}")
+            null
+        }
+    }
+
+    override suspend fun getUserByUsername(username: String, onResult: (String) -> Unit): User? {
+        return try {
+            val querySnapshot = firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .await()
+
+            val user = querySnapshot.documents.firstOrNull()?.toObject(UserDomain::class.java)
+            if (user != null) {
+                User(querySnapshot.documents.first().id,
+                    user.username,
+                    user.email,
+                    user.imageUrl)
+            } else {
+                onResult("Error user not found")
+                null
+            }
+        } catch (e: Exception) {
+            onResult("Error ${e.message}")
             null
         }
     }
@@ -178,9 +211,11 @@ class FirebaseRepositoryImp @Inject constructor(
         try {
             val userRef = firestore.collection("Users").document(id)
             userRef.update("username", username).await()
-            onResult("Nombre de usuario actualizado exitosamente")
+            onResult(
+                resourceProvider.getString(R.string.usernameUpdatedsuccessfullyStr)
+            )
         } catch (e: Exception) {
-            onResult("Error al actualizar el nombre de usuario: ${e.message}")
+            onResult("${resourceProvider.getString(R.string.errorUpdatingUsernameStr)} ${e.message}")
         }
     }
 
@@ -231,7 +266,7 @@ class FirebaseRepositoryImp @Inject constructor(
             chatCollection.document(chatId).collection("messages").add(message).await()
 
         } catch (e: Exception) {
-            println("Error al enviar mensaje: ${e.message}")
+            println("${resourceProvider.getString(R.string.errorSendingMessageStr)} ${e.message}")
         }
     }
 
@@ -360,13 +395,19 @@ class FirebaseRepositoryImp @Inject constructor(
 
                 val userRef = firestore.collection("Users").document(id)
                 userRef.update(updates).await()
-                onResult("Imagen actualizada exitosamente")
+                onResult(
+                    resourceProvider.getString(R.string.imageUpdateSuccessStr)
+                )
             } else {
-                onResult("Error al subir la imagen: ${response.errorBody()?.string()}")
+                onResult(
+                    "${resourceProvider.getString(R.string.imageUploadErrorResponseStr)} ${
+                        response.errorBody()?.string()
+                    }"
+                )
             }
 
         } catch (e: Exception) {
-            onResult("Error al actualizar la imagen: ${e.message}")
+            onResult("${resourceProvider.getString(R.string.imageUpdateErrorResponseStr)} ${e.message}")
         }
     }
 
@@ -413,12 +454,18 @@ class FirebaseRepositoryImp @Inject constructor(
                     receiverId = receiverId,
                     content = imageUrl
                 )
-                onResult("Imagen enviada exitosamente")
+                onResult(
+                    resourceProvider.getString(R.string.imageUploadSuccessStr)
+                )
             } else {
-                onResult("Error al subir la imagen: ${response.errorBody()?.string()}")
+                onResult(
+                    "${resourceProvider.getString(R.string.imageUploadErrorResponseStr)} ${
+                        response.errorBody()?.string()
+                    }"
+                )
             }
         } catch (e: Exception) {
-            onResult("Error al enviar la imagen: ${e.message}")
+            onResult("${resourceProvider.getString(R.string.imageUploadErrorResponseStr)} ${e.message}")
         }
     }
 
